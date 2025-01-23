@@ -1,0 +1,19 @@
+admissionWebhookRuntimeVersion: v0.1.52
+codeGeneratorVersion: v0.32.0
+controllerRuntimeVersion: v0.19.3
+controllerToolsVersion: v0.16.5
+envtestKubernetesVersion: 1.30.3
+goModule: github.com/sap/valkey-operator
+goVersion: 1.23.4
+groupName: cache.cs.sap.com
+groupVersion: v1alpha1
+image: valkey-operator:latest
+kind: Valkey
+kubernetesVersion: v0.32.0
+mutatingWebhookEnabled: false
+operatorName: valkey-operator.cs.sap.com
+owner: SAP SE
+resource: valkeies
+spdxLicenseHeaders: false
+validatingWebhookEnabled: false
+version: v0.3.64

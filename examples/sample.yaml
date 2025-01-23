@@ -1,0 +1,4 @@
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: valkey-operator

@@ -1,0 +1,106 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "valkey-operator.fullname" . }}
+  labels:
+    {{- include "valkey-operator.labels" . | nindent 4 }}
+    valkey-operator.cs.sap.com/ignored: "true"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "valkey-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "valkey-operator.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+      {{- range . }}
+      - {{ toYaml . | nindent 8 | trim }}
+        {{- if not .labelSelector }}
+        labelSelector:
+          matchLabels:
+            {{- include "valkey-operator.selectorLabels" $ | nindent 12 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        nodeTaintsPolicy: Honor
+        whenUnsatisfiable: {{ .Values.defaultHostNameSpreadPolicy  }}
+        labelSelector:
+          matchLabels:
+            {{- include "valkey-operator.selectorLabels" . | nindent 12 }}
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        nodeTaintsPolicy: Honor
+        whenUnsatisfiable: {{ .Values.defaultZoneSpreadPolicy  }}
+        labelSelector:
+          matchLabels:
+            {{- include "valkey-operator.selectorLabels" . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      serviceAccountName: {{ include "valkey-operator.fullname" . }}
+      automountServiceAccountToken: true
+      containers:
+      - name: manager
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - --leader-elect
+        ports:
+        - name: metrics
+          containerPort: 8080
+          protocol: TCP
+        - name: probes
+          containerPort: 8081
+          protocol: TCP
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        livenessProbe:
+          httpGet:
+            port: probes
+            scheme: HTTP
+            path: /healthz
+        readinessProbe:
+          httpGet:
+            port: probes
+            scheme: HTTP
+            path: /readyz

@@ -1,0 +1,5 @@
+{
+    "go.testEnvVars": {
+      "KUBEBUILDER_ASSETS": "${workspaceFolder}/bin/k8s/current"
+    }
+}
