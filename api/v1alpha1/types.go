@@ -74,7 +74,7 @@ type MetricsPrometheusRuleProperties struct {
 	Rules            []prometheusv1.Rule `json:"rules,omitempty"`
 }
 
-// TLSProperties models TLS settings of the redis services
+// TLSProperties models TLS settings of the valkey services
 type TLSProperties struct {
 	Enabled     bool                   `json:"enabled,omitempty"`
 	CertManager *CertManagerProperties `json:"certManager,omitempty"`
