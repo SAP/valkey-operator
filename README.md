@@ -109,6 +109,48 @@ In that go template, the following variables may be used:
 - `.tlsEnabled` (whether TLS encryption is enabled or not)
 - `.caData` (CA certificate that clients may use to connect to valkey)
 
+### Customize pod settings
+
+The following attributes allow to tweak the created pods/containers:
+
+- `spec.nodeSelector`
+- `spec.affinity`
+- `spec.topologySpreadConstraints`
+- `spec.tolerations`
+- `spec.priorityClassName`
+- `spec.podSecurityContext`
+- `spec.podLabels`
+- `spec.podAnnotations`
+- `spec.resources`
+- `spec.securityContext`
+- `spec.sentinel.resources`
+- `spec.sentinel.securityContext`
+- `spec.metrics.resources`
+- `spec.metrics.securityContext`
+
+For topology spread constraints, a special logic applies: if undefined, then
+some weak spread constraints will be generated, such as
+
+```yaml
+topologySpreadConstraints:
+- labelSelector:
+    matchLabels:
+      app.kubernetes.io/component: node
+      app.kubernetes.io/instance: test
+      app.kubernetes.io/name: valkey
+  maxSkew: 1
+  nodeAffinityPolicy: Honor
+  nodeTaintsPolicy: Honor
+  topologyKey: kubernetes.io/hostname
+  whenUnsatisfiable: ScheduleAnyway
+  matchLabelKeys:
+  - controller-revision-hash
+```
+
+This does not harm but helps to ensure proper spreading of the valkey pods across Kubernetes nodes.
+In addition, if a supplied constraint misses both `labelSelector` and `matchLabelKeys`, then
+these attributes will be automatically populated by the controller, as in the above example.
+
 ## Support, Feedback, Contributing
 
 This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/valkey-operator/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
