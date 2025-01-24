@@ -1,0 +1,223 @@
+name: Publish artifacts
+
+on:
+  release:
+    types: [published]
+
+concurrency: release-${{ github.event.release.tag_name }}
+
+env:
+  REGCTL_VERSION: v0.4.8
+  SEMVER_VERSION: 3.4.0
+  REGISTRY: ghcr.io
+  # CHART_REPOSITORY:
+  # CHART_DIRECTORY:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish-go-module:
+    name: Publish go module
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Trigger registration on sum.golang.org
+      run: |
+        repository=${{ github.repository }}
+        tag=${{ github.event.release.tag_name }}
+        curl -sSf \
+          --max-time 30 \
+          --retry 5 \
+          --retry-max-time 300 \
+          https://sum.golang.org/lookup/github.com/${repository,,}@${tag}
+
+  publish-docker:
+    name: Publish Docker image
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    - name: Prepare repository name
+      id: prepare-repository-name
+      run: |
+        repository=$REGISTRY/${{ github.repository }}
+        echo "repository=${repository,,}" >> $GITHUB_OUTPUT
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: extract-metadata
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ steps.prepare-repository-name.outputs.repository }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        platforms: linux/amd64,linux/arm64
+        context: .
+        cache-from: |
+          type=gha,scope=sha-${{ github.sha }}
+          type=gha,scope=${{ github.ref_name }}
+          type=gha,scope=${{ github.base_ref || 'main' }}
+          type=gha,scope=main
+        cache-to: |
+          type=gha,scope=sha-${{ github.sha }},mode=max
+          type=gha,scope=${{ github.ref_name }},mode=max
+        push: true
+        tags: ${{ steps.extract-metadata.outputs.tags }}
+        labels: ${{ steps.extract-metadata.outputs.labels }}
+
+  publish-crds:
+    name: Publish CRD image
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup regctl
+      uses: regclient/actions/regctl-installer@main
+      with:
+        release: ${{ env.REGCTL_VERSION }}
+        install-dir: ${{ runner.temp }}/bin
+
+    - name: Log in to the registry
+      # regctl-login action is currently broken ...
+      # uses: regclient/actions/regctl-login@main
+      # with:
+      #   registry: ${{ env.REGISTRY }}
+      #   username: ${{ github.actor }}
+      #   password: ${{ github.token }}
+      run: |
+        regctl registry login $REGISTRY --user ${{ github.actor }} --pass-stdin <<< ${{ github.token }}
+
+    - name: Build and push artifact
+      run: |
+        cd crds
+        repository=$REGISTRY/${{ github.repository }}/crds
+        tar cvz * | regctl artifact put -m application/gzip ${repository,,}:${{ github.event.release.tag_name }}
+
+  update-chart:
+    name: Update Helm chart
+    runs-on: ubuntu-24.04
+    needs: [publish-docker,publish-crds]
+
+    steps:
+    - name: Prepare
+      id: prepare
+      run: |
+        chart_repository=$CHART_REPOSITORY
+        if [ -z "$chart_repository" ]; then
+          chart_repository=${{ github.repository }}-helm
+        fi
+        echo "chart_repository=$chart_repository" >> $GITHUB_OUTPUT
+
+        chart_directory=$CHART_DIRECTORY
+        if [ -z "$chart_directory" ]; then
+          chart_directory=chart
+        fi
+        echo "chart_directory=$chart_directory" >> $GITHUB_OUTPUT
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout chart repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ steps.prepare.outputs.chart_repository }}
+        path: chart-repository
+        token: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
+
+    - name: Setup semver
+      uses: sap/cs-actions/setup-semver@main
+      with:
+        version: ${{ env.SEMVER_VERSION }}
+        install-directory: ${{ runner.temp }}/bin
+
+    - name: Update chart repository
+      id: update
+      run: |
+        cd chart-repository
+        chart_directory=${{ steps.prepare.outputs.chart_directory }}
+
+        old_version=$(yq .appVersion $chart_directory/Chart.yaml)
+        if [ "${old_version:0:1}" != v ] || [ "$(semver validate $old_version)" != valid ]; then
+          >&2 echo "Found invalid current appVersion ($old_version) in $chart_directory/Chart.yaml)."
+          exit 1
+        fi
+
+        new_version=${{ github.event.release.tag_name }}
+        if [ "${new_version:0:1}" != v ] || [ "$(semver validate $new_version)" != valid ]; then
+          >&2 echo "Invalid target appVersion ($new_version)."
+          exit 1
+        fi
+
+        if [ $(semver compare $new_version $old_version) -lt 0 ]; then
+          echo "Target appVersion ($new_version) is lower than current appVersion ($old_version); skipping update ..."
+          exit 0
+        fi
+
+        version_bump=$(semver diff $new_version $old_version)
+        echo "Found appVersion bump: $version_bump."
+        if [ "$version_bump" != major ] && [ "$version_bump" != minor ]; then
+          version_bump=patch
+        fi
+        echo "Performing chart version bump: $version_bump ..."
+
+        echo "Updating custom resource definitions ($chart_directory/crds) ..."
+        rm -rf $chart_directory/crds
+        cp -r ../crds $chart_directory
+
+        echo "Updating appVersion in $chart_directory/Chart.yaml (current: $old_version; target: $new_version) ..."
+        perl -pi -e "s#^appVersion:.*#appVersion: $new_version#g" $chart_directory/Chart.yaml
+
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "Nothing has changed; skipping commit/push ..."
+          exit 0
+        fi
+
+        git config user.name "${{ vars.WORKFLOW_USER_NAME }}"
+        git config user.email "${{ vars.WORKFLOW_USER_EMAIL }}"
+        git add -A
+        git commit -F- <<END
+        Update chart (triggered by operator release $new_version)
+        Repository: ${{ github.repository }}
+        Release: ${{ github.event.release.tag_name }}
+        Commit: ${{ github.sha }}
+        END
+        git push
+
+        echo "version_bump=$version_bump" >> $GITHUB_OUTPUT
+
+        # add some safety sleep to overcome github race conditions
+        sleep 10s
+
+    - name: Release chart repository
+      if: steps.update.outputs.version_bump != ''
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        repo: ${{ steps.prepare.outputs.chart_repository }}
+        workflow: release.yaml
+        ref: main
+        token: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
+        inputs: '{ "version-bump": "${{ steps.update.outputs.version_bump }}" }'
+

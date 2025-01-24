@@ -1,0 +1,157 @@
+name: Trigger release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-bump:
+        description: 'Whether to bump major, minor or patch version'
+        required: false
+        default: patch
+        type: choice
+        options:
+        - major
+        - minor
+        - patch
+      desired-version:
+        description: 'Version to be released; if specified, version-bump will be ignored'
+        required: false
+        default: ''
+
+  schedule:
+  - cron: '10 7 * * 1'
+  - cron: '10 8 * * 1'
+
+concurrency: trigger-release
+
+env:
+  TAG_PREFIX: v
+  INITIAL_TAG: v0.1.0
+  SEMVER_VERSION: 3.4.0
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    name: Trigger release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+    - name: Validate ref
+      run: |
+        if [ "${{ github.ref }}" != refs/heads/main ]; then
+          >&2 echo "Invalid ref: ${{ github.ref }} (expected: refs/heads/main)"
+          exit 1
+        fi
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup semver
+      uses: sap/cs-actions/setup-semver@main
+      with:
+        version: ${{ env.SEMVER_VERSION }}
+        install-directory: ${{ runner.temp }}/bin
+
+    - name: Determine current release
+      id: get_current_release
+      uses: sap/cs-actions/get-highest-tag@main
+      with:
+        prefix: ${{ env.TAG_PREFIX }}
+
+    - name: Determine target release
+      id: get_target_release
+      run: |
+        create_release=true
+
+        if ${{ github.event_name == 'schedule' }}; then
+          commits_count=$(git rev-list --count --no-merges ${{ steps.get_current_release.outputs.tag }}..HEAD --before=1.hour)
+          if [ $commits_count -eq 0 ]; then
+            create_release=false
+            echo "There are no commits since latest release, nothing to do."
+          fi
+          version_bump=patch
+        else
+          version_bump=${{ inputs.version-bump }}
+        fi
+
+        echo "Create release: $create_release"
+        echo "create_release=$create_release" >> $GITHUB_OUTPUT
+
+        if [ "$create_release" != true ]; then
+          exit 0
+        fi
+
+        desired_version=${{ inputs.desired-version }}
+        current_version=${{ steps.get_current_release.outputs.version }}
+
+        if [ -z "$desired_version" ]; then
+          case $version_bump in
+            major|minor|patch)
+              # ok
+              ;;
+            *)
+              >&2 echo "Invalid input: version-bump ($version_bump)"
+              exit 1
+          esac
+          if [ -z "$current_version" ]; then
+            version=${INITIAL_TAG/#$TAG_PREFIX/}
+            tag=$INITIAL_TAG
+          else
+            version=$(semver bump $version_bump $current_version)
+            tag=$TAG_PREFIX$version
+          fi
+        else
+          if [[ $desired_version =~ ^$TAG_PREFIX([0-9].*)$ ]]; then
+            version=${BASH_REMATCH[1]}
+            tag=$desired_version
+          else
+            >&2 echo "Invalid input: desired-version ($desired_version) should start with $TAG_PREFIX."
+            exit 1
+          fi
+          if [ "$(semver validate $version)" != valid ]; then
+            >&2 echo "Invalid input: desired-version ($version) is not a valid semantic version."
+            exit 1
+          fi
+          if [ "$(semver compare $version $current_version)" -le 0 ]; then
+            >&2 echo "Invalid input: desired-version ($version) should be higher than current version ($current_version)."
+            exit 1
+          fi
+        fi
+
+        echo "Target version: $version"
+        echo "Target tag: $tag"
+        echo "version=$version" >> $GITHUB_OUTPUT
+        echo "tag=$tag" >> $GITHUB_OUTPUT
+
+    - name: Determine target commit
+      id: get_target_commit
+      if: steps.get_target_release.outputs.create_release == 'true'
+      run: |
+        sha=$(git rev-parse HEAD)
+        echo "Target commit: $sha"
+        echo "sha=$sha" >> $GITHUB_OUTPUT
+
+    - name: Wait for check suites to complete
+      if: steps.get_target_release.outputs.create_release == 'true'
+      uses: sap-contributions/await-check-suites@master
+      with:
+        ref: ${{ steps.get_target_commit.outputs.sha }}
+        intervalSeconds: 10
+        timeoutSeconds: 1800
+        failStepIfUnsuccessful: true
+        appSlugFilter: github-actions
+
+    - name: Create Release
+      if: steps.get_target_release.outputs.create_release == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
+      run: |
+        gh release create ${{ steps.get_target_release.outputs.tag }} \
+          --target "${{ steps.get_target_commit.outputs.sha }}"
