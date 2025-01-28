@@ -5489,7 +5489,7 @@ spec:
                   type: object
                 type: array
               tls:
-                description: TLSProperties models TLS settings of the redis services
+                description: TLSProperties models TLS settings of the valkey services
                 properties:
                   certManager:
                     description: CertManagerProperties models cert-manager related
