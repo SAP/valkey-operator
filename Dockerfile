@@ -17,6 +17,7 @@ COPY api/ api/
 COPY pkg/ pkg/
 COPY crds/ crds/
 COPY internal/ internal/
+COPY tests/ tests/
 COPY Makefile Makefile
 
 # Run tests and build
