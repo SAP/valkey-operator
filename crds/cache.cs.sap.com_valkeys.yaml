@@ -24,7 +24,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Valkey is the Schema for the valkeies API.
+        description: Valkey is the Schema for the valkey API
         properties:
           apiVersion:
             description: |-
@@ -44,7 +44,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ValkeySpec defines the desired state of Valkey.
+            description: ValkeySpec defines the desired state of Valkey
             properties:
               affinity:
                 description: Affinity is a group of affinity scheduling rules.
@@ -5729,7 +5729,7 @@ spec:
           status:
             default:
               observedGeneration: -1
-            description: ValkeyStatus defines the observed state of Valkey.
+            description: ValkeyStatus defines the observed state of Valkey
             properties:
               appliedGeneration:
                 format: int64

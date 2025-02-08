@@ -16,7 +16,7 @@ import (
 	componentoperatorruntimetypes "github.com/sap/component-operator-runtime/pkg/types"
 )
 
-// ValkeySpec defines the desired state of Valkey.
+// ValkeySpec defines the desired state of Valkey
 type ValkeySpec struct {
 	Version string `json:"version,omitempty"`
 	// +kubebuilder:validation:Minimum=1
@@ -94,7 +94,7 @@ type BindingProperties struct {
 	Template *string `json:"template,omitempty"`
 }
 
-// ValkeyStatus defines the observed state of Valkey.
+// ValkeyStatus defines the observed state of Valkey
 type ValkeyStatus struct {
 	component.Status `json:",inline"`
 }
@@ -105,7 +105,7 @@ type ValkeyStatus struct {
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +genclient
 
-// Valkey is the Schema for the valkeies API.
+// Valkey is the Schema for the valkey API
 type Valkey struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -119,7 +119,7 @@ var _ component.Component = &Valkey{}
 
 // +kubebuilder:object:root=true
 
-// ValkeyList contains a list of Valkey.
+// ValkeyList contains a list of Valkey
 type ValkeyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -132,6 +132,14 @@ func (s *ValkeySpec) ToUnstructured() map[string]any {
 		panic(err)
 	}
 	return result
+}
+
+func (c *Valkey) GetDeploymentNamespace() string {
+	return c.Namespace
+}
+
+func (c *Valkey) GetDeploymentName() string {
+	return c.Name
 }
 
 func (c *Valkey) GetSpec() componentoperatorruntimetypes.Unstructurable {

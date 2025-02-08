@@ -1,0 +1,76 @@
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: test
+spec:
+  binding:
+    template: '{ credentials: { cluster_mode: false, tls: false, sentinel_nodes: [{
+      hostname: {{ .sentinelHost }}, port: {{ .sentinelPort }} }], uri: valkey://:{{
+      .password }}@{{ .sentinelHost }}:{{ .sentinelPort }}#myprimary, password: {{
+      .password }}, hostname: {{ .host }}, port: {{ .port }} }}'
+  metrics:
+    enabled: true
+    monitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+      relabellings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: node
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: pod
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: namespace
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_container_name
+          targetLabel: container
+      metricRelabelings:
+        - action: replace
+          sourceLabels:
+            - __name__
+          targetLabel: metric
+      honorLabels: true
+      additionalLabels:
+        label1: value1
+        label2: value2
+      podTargetLabels:
+        - "label1"
+        - "label2"
+    prometheusRule:
+      enabled: true
+      additionalLabels:
+        label1: value1
+        label2: value2
+      rules:
+      - alert: ValkeyDown
+        expr: valkey_up{service="{{ template "common.names.fullname" . }}-metrics"} == 0
+        for: 2m
+        labels:
+          severity: error
+        annotations:
+          summary: Valkey&reg; instance {{ "{{ $labels.instance }}" }} down
+          description: Valkey&reg; instance {{ "{{ $labels.instance }}" }} is down
+      - alert: ValkeyMemoryHigh
+        expr: >
+          valkey_memory_used_bytes{service="{{ template "common.names.fullname" . }}-metrics"} * 100
+          /
+          valkey_memory_max_bytes{service="{{ template "common.names.fullname" . }}-metrics"}
+          > 90
+        for: 2m
+        labels:
+          severity: error
+        annotations:
+          summary: Valkey&reg; instance {{ "{{ $labels.instance }}" }} is using too much memory
+          description: |
+            Valkey&reg; instance {{ "{{ $labels.instance }}" }} is using {{ "{{ $value }}" }}% of its available memory.
+  replicas: 3
+  sentinel:
+    enabled: true
+  tls: {}

@@ -129,6 +129,6 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 	).SetupWithManager(mgr); err != nil {
 		return errors.Wrapf(err, "unable to create controller")
 	}
-
+	operatorv1alpha1.NewWebhook().SetupWithManager(mgr)
 	return nil
 }

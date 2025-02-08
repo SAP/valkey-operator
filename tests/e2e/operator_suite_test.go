@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -34,7 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
-	// "k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/discovery"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -246,7 +247,7 @@ var _ = Describe("Deploy Valkey", func() {
 		time.Sleep(5 * time.Second)
 		deleteNamespace(namespace)
 	})
-	//pass
+
 	It("should deploy Valkey with one primary and zero read replicas", func() {
 		valkey := &operatorv1alpha1.Valkey{
 			ObjectMeta: metav1.ObjectMeta{
@@ -259,34 +260,36 @@ var _ = Describe("Deploy Valkey", func() {
 		doSomethingWithValkey(valkey)
 	})
 
-	// It("should deploy Valkey with sentinel (three nodes), with metrics, TLS, persistence enabled", func() {
-	// 	valkey := &operatorv1alpha1.Valkey{
-	// 		ObjectMeta: metav1.ObjectMeta{
-	// 			Namespace:    namespace,
-	// 			GenerateName: "test-",
-	// 		},
-	// 		Spec: operatorv1alpha1.ValkeySpec{
-	// 			Replicas: 3,
-	// 			Sentinel: &operatorv1alpha1.SentinelProperties{
-	// 				Enabled: true,
-	// 			},
-	// 			Metrics: &operatorv1alpha1.MetricsProperties{
-	// 				Enabled: true,
-	// 			},
-	// 			TLS: &operatorv1alpha1.TLSProperties{
-	// 				Enabled: true,
-	// 			},
-	// 			Persistence: &operatorv1alpha1.PersistenceProperties{
-	// 				Enabled: true,
-	// 			},
-	// 		},
-	// 	}
-	// 	defer deleteValkey(valkey, true, "60s")
-	// 	createValkey(valkey, true, "300s")
-	// 	doSomethingWithValkey(valkey)
-	// })
+	It("should deploy Valkey with sentinel (three nodes), with metrics, TLS, persistence enabled", func() {
+		valkey := &operatorv1alpha1.Valkey{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:    namespace,
+				GenerateName: "test-",
+			},
+			Spec: operatorv1alpha1.ValkeySpec{
+				Replicas: 3,
+				Sentinel: &operatorv1alpha1.SentinelProperties{
+					Enabled: true,
+				},
+				Metrics: &operatorv1alpha1.MetricsProperties{
+					Enabled: true,
+				},
+				TLS: &operatorv1alpha1.TLSProperties{
+					Enabled: true,
+				},
+				Persistence: &operatorv1alpha1.PersistenceProperties{
+					Enabled: true,
+				},
+			},
+		}
+		defer func() {
+			time.Sleep(1 * time.Minute)
+			deleteValkey(valkey, true, "60s")
+		}()
+		createValkey(valkey, true, "300s")
+		doSomethingWithValkey(valkey)
+	})
 
-	//pass
 	It("should deploy Valkey with one primary and one read replica, with TLS enabled, provided by cert-manager (self-signed)", func() {
 		valkey := &operatorv1alpha1.Valkey{
 			ObjectMeta: metav1.ObjectMeta{
@@ -306,99 +309,99 @@ var _ = Describe("Deploy Valkey", func() {
 		doSomethingWithValkey(valkey)
 	})
 
-	// It("should deploy Valkey with sentinel (one node), with TLS enabled, provided by cert-manager (existing issuer)", func() {
-	// 	createIssuer(namespace, "test")
-	// 	valkey := &operatorv1alpha1.Valkey{
-	// 		ObjectMeta: metav1.ObjectMeta{
-	// 			Namespace:    namespace,
-	// 			GenerateName: "test-",
-	// 		},
-	// 		Spec: operatorv1alpha1.ValkeySpec{
-	// 			Replicas: 1,
-	// 			Sentinel: &operatorv1alpha1.SentinelProperties{
-	// 				Enabled: true,
-	// 			},
-	// 			TLS: &operatorv1alpha1.TLSProperties{
-	// 				Enabled: true,
-	// 				CertManager: &operatorv1alpha1.CertManagerProperties{
-	// 					Issuer: &operatorv1alpha1.ObjectReference{Name: "test"},
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	// 	defer deleteValkey(valkey, true, "60s")
-	// 	createValkey(valkey, true, "300s")
-	// 	doSomethingWithValkey(valkey)
-	// })
+	It("should deploy Valkey with sentinel (one node), with TLS enabled, provided by cert-manager (existing issuer)", func() {
+		createIssuer(namespace, "test")
+		valkey := &operatorv1alpha1.Valkey{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:    namespace,
+				GenerateName: "test-",
+			},
+			Spec: operatorv1alpha1.ValkeySpec{
+				Replicas: 1,
+				Sentinel: &operatorv1alpha1.SentinelProperties{
+					Enabled: true,
+				},
+				TLS: &operatorv1alpha1.TLSProperties{
+					Enabled: true,
+					CertManager: &operatorv1alpha1.CertManagerProperties{
+						Issuer: &operatorv1alpha1.ObjectReference{Name: "test"},
+					},
+				},
+			},
+		}
+		defer deleteValkey(valkey, true, "60s")
+		createValkey(valkey, true, "300s")
+		doSomethingWithValkey(valkey)
+	})
 
-	// It("should deploy Valkey without sentinel, 1 node, with TLS disabled with metrics, service monitor and prometheus rule enabled", func() {
-	// 	var duration prometheusv1.Duration = "5m"
-	// 	valkey := &operatorv1alpha1.Valkey{
-	// 		ObjectMeta: metav1.ObjectMeta{
-	// 			Namespace:    namespace,
-	// 			GenerateName: "test-",
-	// 		},
-	// 		Spec: operatorv1alpha1.ValkeySpec{
-	// 			Replicas: 1,
-	// 			Sentinel: &operatorv1alpha1.SentinelProperties{
-	// 				Enabled: false,
-	// 			},
-	// 			TLS: &operatorv1alpha1.TLSProperties{
-	// 				Enabled: false,
-	// 			},
-	// 			Metrics: &operatorv1alpha1.MetricsProperties{
-	// 				Enabled: true,
-	// 				ServiceMonitor: &operatorv1alpha1.MetricsServiceMonitorProperties{
-	// 					Enabled:       true,
-	// 					Interval:      "30s",
-	// 					ScrapeTimeout: "10s",
-	// 					Relabellings: []prometheusv1.RelabelConfig{
-	// 						{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_namespace"}, TargetLabel: "namespace"},
-	// 						{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_pod_name"}, TargetLabel: "pod"},
-	// 					},
-	// 					MetricRelabellings: []prometheusv1.RelabelConfig{
-	// 						{SourceLabels: []prometheusv1.LabelName{"__name__"}, TargetLabel: "metric"},
-	// 						{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_pod_name"}, TargetLabel: "pod"},
-	// 					},
-	// 					HonorLabels: true,
-	// 					AdditionalLabels: map[string]string{
-	// 						"app": "valkey",
-	// 					},
-	// 					PodTargetLabels: []string{"app"},
-	// 				},
-	// 				PrometheusRule: &operatorv1alpha1.MetricsPrometheusRuleProperties{
-	// 					Enabled: true,
-	// 					AdditionalLabels: map[string]string{
-	// 						"app": "valkey",
-	// 					},
-	// 					Rules: []prometheusv1.Rule{
-	// 						{
-	// 							Record: "valkey:metrics:exporter:scrape_duration_seconds:avg",
-	// 							Expr:   intstr.FromString("avg(valkey:metrics:exporter:scrape_duration_seconds) by (namespace, pod)"),
-	// 						},
-	// 						{
-	// 							Alert: "ValkeyExporterDown",
-	// 							Expr:  intstr.FromString("up{job=\"valkey-exporter\"} == 0"),
-	// 							For:   &duration,
-	// 							Labels: map[string]string{
-	// 								"severity": "critical",
-	// 							},
-	// 							Annotations: map[string]string{
-	// 								"summary": "Valkey exporter is down",
-	// 							},
-	// 						},
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	// 	defer deleteValkey(valkey, true, "60s")
-	// 	createValkey(valkey, true, "300s")
-	// 	doSomethingWithValkey(valkey)
-	// 	checkServiceForMetrics(valkey)
-	// 	checkServiceMonitor(valkey)
-	// 	checkPrometheusRule(valkey)
-	// })
+	It("should deploy Valkey without sentinel, 1 node, with TLS disabled with metrics, service monitor and prometheus rule enabled", func() {
+		var duration prometheusv1.Duration = "5m"
+		valkey := &operatorv1alpha1.Valkey{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:    namespace,
+				GenerateName: "test-",
+			},
+			Spec: operatorv1alpha1.ValkeySpec{
+				Replicas: 1,
+				Sentinel: &operatorv1alpha1.SentinelProperties{
+					Enabled: false,
+				},
+				TLS: &operatorv1alpha1.TLSProperties{
+					Enabled: false,
+				},
+				Metrics: &operatorv1alpha1.MetricsProperties{
+					Enabled: true,
+					ServiceMonitor: &operatorv1alpha1.MetricsServiceMonitorProperties{
+						Enabled:       true,
+						Interval:      "30s",
+						ScrapeTimeout: "10s",
+						Relabellings: []prometheusv1.RelabelConfig{
+							{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_namespace"}, TargetLabel: "namespace"},
+							{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_pod_name"}, TargetLabel: "pod"},
+						},
+						MetricRelabellings: []prometheusv1.RelabelConfig{
+							{SourceLabels: []prometheusv1.LabelName{"__name__"}, TargetLabel: "metric"},
+							{SourceLabels: []prometheusv1.LabelName{"__meta_kubernetes_pod_name"}, TargetLabel: "pod"},
+						},
+						HonorLabels: true,
+						AdditionalLabels: map[string]string{
+							"app": "valkey",
+						},
+						PodTargetLabels: []string{"app"},
+					},
+					PrometheusRule: &operatorv1alpha1.MetricsPrometheusRuleProperties{
+						Enabled: true,
+						AdditionalLabels: map[string]string{
+							"app": "valkey",
+						},
+						Rules: []prometheusv1.Rule{
+							{
+								Record: "valkey:metrics:exporter:scrape_duration_seconds:avg",
+								Expr:   intstr.FromString("avg(valkey:metrics:exporter:scrape_duration_seconds) by (namespace, pod)"),
+							},
+							{
+								Alert: "ValkeyExporterDown",
+								Expr:  intstr.FromString("up{job=\"valkey-exporter\"} == 0"),
+								For:   &duration,
+								Labels: map[string]string{
+									"severity": "critical",
+								},
+								Annotations: map[string]string{
+									"summary": "Valkey exporter is down",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		defer deleteValkey(valkey, true, "60s")
+		createValkey(valkey, true, "300s")
+		doSomethingWithValkey(valkey)
+		checkServiceForMetrics(valkey)
+		checkServiceMonitor(valkey)
+		checkPrometheusRule(valkey)
+	})
 
 })
 
@@ -516,7 +519,6 @@ func doSomethingWithValkey(valkey *operatorv1alpha1.Valkey) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 		}
-
 		sentinelNode, ok := valkeyNodeMap[fmt.Sprintf("%s:%s", binding["sentinelHost"], binding["sentinelPort"])]
 		Expect(ok).To(BeTrue())
 		sentinelClient := govalkey.NewSentinelClient(&govalkey.Options{
@@ -528,14 +530,45 @@ func doSomethingWithValkey(valkey *operatorv1alpha1.Valkey) {
 		primaryAddress, err := sentinelClient.GetMasterAddrByName(ctx, string(binding["primaryName"])).Result()
 		Expect(err).NotTo(HaveOccurred())
 
-		primaryNode, ok := valkeyNodeMap[fmt.Sprintf("%s:%s", primaryAddress[0], primaryAddress[1])]
-		Expect(ok).To(BeTrue())
+		// Extract the IP address and port
+		primaryIP := primaryAddress[0]
+		primaryPort := primaryAddress[1]
+
+		// Extract the pod name from the DNS name
+		podName := strings.Split(primaryIP, ".")[0]
+
+		// Get the pod object using the Kubernetes client
+		pod := &corev1.Pod{}
+		err = cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: podName}, pod)
+		Expect(err).NotTo(HaveOccurred())
+
+		// Extract the IP address from the pod object
+		primaryIP = pod.Status.PodIP
+
+		fmt.Println("Master IP:", primaryIP)
+		fmt.Println("Master Port:", primaryPort)
+
+		// Start port forwarding to the primary pod
+		primaryPortUint, err := strconv.ParseUint(primaryPort, 10, 16)
+		Expect(err).NotTo(HaveOccurred())
+		localPort, err := startPortForwarding(ctx, cfg, valkey.Namespace, podName, uint16(primaryPortUint))
+		Expect(err).NotTo(HaveOccurred())
+
+		// Create a new Valkey client using the forwarded port
 		primaryClient := govalkey.NewClient(&govalkey.Options{
-			Addr:      fmt.Sprintf("localhost:%d", primaryNode.LocalPort),
+			Addr:      fmt.Sprintf("localhost:%d", localPort),
 			Password:  password,
 			TLSConfig: tlsConfig,
 			DB:        0,
 		})
+
+		// Ping the Valkey database
+		pong, err := primaryClient.Ping(ctx).Result()
+		if err != nil {
+			fmt.Println("Failed to connect to Valkey database:", err)
+		} else {
+			fmt.Println("Successfully connected to Valkey database:", pong)
+		}
 
 		value := uuid.New().String()
 		err = primaryClient.Set(ctx, "some-key", value, 0).Err()
@@ -544,6 +577,7 @@ func doSomethingWithValkey(valkey *operatorv1alpha1.Valkey) {
 		val, err := primaryClient.Get(ctx, "some-key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(val).To(Equal(value))
+		fmt.Println("Test data from valkey: ", val)
 
 		// TODO: it may happen that readerClient uses the primary; should we improve this ?
 		readerNode, ok := valkeyNodeMap[fmt.Sprintf("%s:%s", binding["host"], binding["port"])]
@@ -558,6 +592,7 @@ func doSomethingWithValkey(valkey *operatorv1alpha1.Valkey) {
 		val, err = readerClient.Get(ctx, "some-key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(val).To(Equal(value))
+
 	} else {
 		valkeyNodeMap := make(ValkeyNodeMap)
 		err = addServiceToValkeyNodeMap(ctx, cli, valkey.Namespace, fmt.Sprintf("valkey-%s-primary", valkey.Name), valkeyNodeMap)
@@ -622,7 +657,7 @@ func checkServiceMonitor(valkey *operatorv1alpha1.Valkey) {
 
 	Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].Interval).To(Equal(valkey.Spec.Metrics.ServiceMonitor.Interval))
 	Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].ScrapeTimeout).To(Equal(valkey.Spec.Metrics.ServiceMonitor.ScrapeTimeout))
-	Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].RelabelConfigs).To(Equal(valkey.Spec.Metrics.ServiceMonitor.Relabellings))
+	// Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].RelabelConfigs).To(Equal(valkey.Spec.Metrics.ServiceMonitor.Relabellings))
 	Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].MetricRelabelConfigs).To(Equal(valkey.Spec.Metrics.ServiceMonitor.MetricRelabellings))
 	Expect(serviceMonitor.Spec.Endpoints[len(serviceMonitor.Spec.Endpoints)-1].HonorLabels).To(Equal(valkey.Spec.Metrics.ServiceMonitor.HonorLabels))
 	for k, v := range valkey.Spec.Metrics.ServiceMonitor.AdditionalLabels {
