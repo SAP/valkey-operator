@@ -224,8 +224,8 @@ var _ = Describe("Deploy Valkey", func() {
 		err = cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: fmt.Sprintf("valkey-%s-binding", valkey.Name)}, bindingSecret)
 		Expect(err).NotTo(HaveOccurred())
 		expectedSecretData := map[string][]byte{
-			"primaryHost":  []byte(fmt.Sprintf("valkey-%s-primary.%s.svc.cluster.local", valkey.Name, valkey.Namespace)),
-			"primaryPort":  []byte("6379"),
+			"primaryHost": []byte(fmt.Sprintf("valkey-%s-primary.%s.svc.cluster.local", valkey.Name, valkey.Namespace)),
+			"primaryPort": []byte("6379"),
 			"replicaHost": []byte(fmt.Sprintf("valkey-%s-replicas.%s.svc.cluster.local", valkey.Name, valkey.Namespace)),
 			"replicaPort": []byte("6379"),
 			"password":    authSecret.Data["valkey-password"],
@@ -297,7 +297,7 @@ var _ = Describe("Deploy Valkey", func() {
 			"port":            []byte("6379"),
 			"sentinelHost":    []byte(fmt.Sprintf("valkey-%s.%s.svc.cluster.local", valkey.Name, valkey.Namespace)),
 			"sentinelPort":    []byte("26379"),
-			"primaryName":      []byte("myprimary"),
+			"primaryName":     []byte("myprimary"),
 			"password":        authSecret.Data["valkey-password"],
 			"tlsEnabled":      []byte("true"),
 			"caData":          tlsSecret.Data["ca.crt"],
@@ -355,7 +355,7 @@ var _ = Describe("Deploy Valkey", func() {
 		err = cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: fmt.Sprintf("valkey-%s-binding", valkey.Name)}, bindingSecret)
 		Expect(err).NotTo(HaveOccurred())
 		expectedSecretData := map[string][]byte{
-			"primaryAddress":  []byte(fmt.Sprintf("valkey-%s-primary.%s.svc.cluster.local:%d", valkey.Name, valkey.Namespace, 6379)),
+			"primaryAddress": []byte(fmt.Sprintf("valkey-%s-primary.%s.svc.cluster.local:%d", valkey.Name, valkey.Namespace, 6379)),
 			"replicaAddress": []byte(fmt.Sprintf("valkey-%s-replicas.%s.svc.cluster.local:%d", valkey.Name, valkey.Namespace, 6379)),
 		}
 		Expect(bindingSecret.Data).To(Equal(expectedSecretData))
@@ -392,7 +392,7 @@ func buildValidatingWebhookConfiguration() *admissionv1.ValidatingWebhookConfigu
 				Rule: admissionv1.Rule{
 					APIGroups:   []string{operatorv1alpha1.GroupVersion.Group},
 					APIVersions: []string{operatorv1alpha1.GroupVersion.Version},
-					Resources:   []string{"valkey"},
+					Resources:   []string{"valkeys"},
 				},
 			}},
 			SideEffects: &[]admissionv1.SideEffectClass{admissionv1.SideEffectClassNone}[0],
