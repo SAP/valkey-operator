@@ -65,7 +65,6 @@ func reconcileBinding(ctx context.Context, client client.Client, valkey *operato
 			return err
 		}
 	} else {
-		fmt.Print("### Using default binding template")
 		if _, err := t.ParseFS(data, "data/binding.yaml"); err != nil {
 			return err
 		}

@@ -4,13 +4,13 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.1
-  name: valkeys.cache.cs.sap.com
+  name: valkey.cache.cs.sap.com
 spec:
   group: cache.cs.sap.com
   names:
     kind: Valkey
     listKind: ValkeyList
-    plural: valkeys
+    plural: valkey
     singular: valkey
   scope: Namespaced
   versions:
