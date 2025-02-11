@@ -1,0 +1,91 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "labels": [
+    "dependencies"
+  ],
+  "extends": [
+    "config:base"
+  ],
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 10,
+  "semanticCommits": "enabled",
+  "postUpdateOptions": [
+    "gomodUpdateImportPaths"
+  ],
+  "ignoreDeps": [
+    "docker.io/bitnami/redis",
+    "docker.io/bitnami/redis-sentinel",
+    "docker.io/bitnami/redis-exporter"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "k8s.io/client-go"
+      ],
+      "allowedVersions": "<1.4.0"
+    },
+    {
+      "matchDatasources": [
+        "golang-version"
+      ],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true,
+      "groupName": "non-minor dependencies",
+      "groupSlug": "non-minor-deps"
+    },
+    {
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": true,
+      "groupName": "minor dependencies",
+      "groupSlug": "minor-deps"
+    },
+    {
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchLanguages": [
+        "go",
+        "golang"
+      ],
+      "groupName": "minor dependencies (golang)",
+      "groupSlug": "minor-deps-golang",
+      "semanticCommitScope": "go.mod/go.sum"
+    },
+    {
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchLanguages": [
+        "docker"
+      ],
+      "groupName": "minor dependencies (Dockerfile)",
+      "groupSlug": "minor-deps-dockerfile",
+      "semanticCommitScope": "Dockerfile"
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "groupName": "major dependencies",
+      "groupSlug": "major-deps",
+      "semanticCommitScope": "major deps"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github-actions",
+      "semanticCommitScope": "actions"
+    }
+  ]
+}
