@@ -151,6 +151,10 @@ This does not harm but helps to ensure proper spreading of the valkey pods acros
 In addition, if a supplied constraint misses both `labelSelector` and `matchLabelKeys`, then
 these attributes will be automatically populated by the controller, as in the above example.
 
+## Documentation
+
+The API reference is here: [https://pkg.go.dev/github.com/sap/valkey-operator](https://pkg.go.dev/github.com/sap/valkey-operator).
+
 ## Support, Feedback, Contributing
 
 This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/valkey-operator/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
