@@ -1,0 +1,52 @@
+name: Stale Issues and PRs
+
+on:
+  schedule:
+    - cron: '45 3 * * *'  # Every day at 2:30 AM UTC
+  workflow_dispatch:  # Manually trigger the workflow through GitHub UI
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}  # Prevent parallel workflows for the same workflow
+      cancel-in-progress: false  # Does not cancel the running workflow, waits for it to finish
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: write
+
+    steps:
+    - name: Mark stale issues and PRs
+      uses: actions/stale@v9.1.0  # Use the latest version of the Stale Action
+      with:
+        # Label to apply to stale issues
+        stale-issue-label: 'stale'
+          
+        # Label to apply to stale pull requests
+        stale-pr-label: 'stale'
+
+        # Number of days before an issue/PR is marked as stale
+        days-before-stale: 180  # If the issue/PR has been inactive for 180 days, it will be marked as stale
+          
+        # Number of days before a stale issue/PR is closed
+        days-before-close: 7  # If the stale issue/PR has been inactive for 7 days day, it will be closed
+
+        # Option to close stale issues and PRs
+        close-issue-label: 'closed'  # Close issues that are marked as stale
+        close-pr-label: 'closed'  # Close PRs that are marked as stale
+
+        # Exclude issues and PRs that have certain labels from being marked stale
+        exempt-issue-labels: 'closed'  # Ignore issues with 'closed' label
+        exempt-pr-labels: 'closed'  # Ignore PRs with 'closed' label
+
+        # Custom message for stale issues
+        stale-issue-message: 'This issue has been marked as stale because it has not had activity for 180 days. It will be closed in 7 days if no further activity occurs.'
+          
+        # Custom message for stale pull requests
+        stale-pr-message: 'This pull request has been marked as stale because it has not had activity for 180 day. It will be closed in 7 days if no further activity occurs.'
+
+        # Remove the stale label when an issue/PR is updated/comments
+        remove-issue-stale-when-updated: true  # Remove the stale label when an issue is updated  
+        remove-pr-stale-when-updated: true  # Remove the stale label when a PR is updated
