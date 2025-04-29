@@ -10,13 +10,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"text/template"
+
 	"github.com/Masterminds/sprig/v3"
 	operatorv1alpha1 "github.com/sap/valkey-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	kyaml "sigs.k8s.io/yaml"
-	"text/template"
 )
 
 func reconcileBinding(ctx context.Context, client client.Client, valkey *operatorv1alpha1.Valkey) error {
@@ -79,7 +80,12 @@ func reconcileBinding(ctx context.Context, client client.Client, valkey *operato
 	}
 
 	bindingSecret := &corev1.Secret{}
-	bindingSecretName := fmt.Sprintf("valkey-%s-binding", valkey.Name)
+	bindingSecretName := ""
+	if valkey.Spec.Binding != nil && valkey.Spec.Binding.SecretName != "" {
+		bindingSecretName = valkey.Spec.Binding.SecretName
+	} else {
+		bindingSecretName = fmt.Sprintf("valkey-%s-binding", valkey.Name)
+	}
 	if err := client.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: bindingSecretName}, bindingSecret); err != nil {
 		return err
 	}

@@ -970,6 +970,8 @@ spec:
                 description: BindingProperties models custom properties for the generated
                   binding secret
                 properties:
+                  secretName:
+                    type: string
                   template:
                     type: string
                 type: object

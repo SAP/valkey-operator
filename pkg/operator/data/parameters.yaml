@@ -9,6 +9,11 @@ fullnameOverride: {{ $fullname }}
 {{- $tlsEnabled := (dig "tls" "enabled" false .) }}
 {{- $persistenceEnabled := (dig "persistence" "enabled" false .) }}
 
+{{- $bindingSecretName := (dig "binding" "secretName" "" .) }}
+{{- if eq $bindingSecretName "" }}
+{{- $bindingSecretName = printf "%s-binding" $fullname }}
+{{- end }}
+
 {{- with .Version}}
 image:
   tag: {{ . }}
@@ -214,7 +219,7 @@ extraDeploy:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: {{ $fullname }}-binding
+    name: {{ $bindingSecretName }}
     annotations:
       helm.sh/hook: post-install
   type: Opaque
