@@ -91,7 +91,8 @@ type PersistenceProperties struct {
 
 // BindingProperties models custom properties for the generated binding secret
 type BindingProperties struct {
-	Template *string `json:"template,omitempty"`
+	SecretName string  `json:"secretName,omitempty"`
+	Template   *string `json:"template,omitempty"`
 }
 
 // ValkeyStatus defines the observed state of Valkey
