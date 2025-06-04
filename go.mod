@@ -10,7 +10,7 @@ require (
 	github.com/onsi/gomega v1.37.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.83.0
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/sap/admission-webhook-runtime v0.1.66
 	github.com/sap/component-operator-runtime v0.3.101
 	github.com/sap/go-generics v0.2.32
