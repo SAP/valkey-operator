@@ -159,12 +159,15 @@ github.com/sap/admission-webhook-runtime v0.1.66 h1:Xk9hBlbMuENScOtly466v0l2PgCk
 github.com/sap/admission-webhook-runtime v0.1.66/go.mod h1:uNNGmb9LGTkVZVBNpOBqVTaU/e3xGB2xeNrpYS0sTGY=
 github.com/sap/component-operator-runtime v0.3.101 h1:q86N8eZ/a1x5pXzdyRvSUiZ7648L4xp2izbbDWIdTYU=
 github.com/sap/component-operator-runtime v0.3.101/go.mod h1:DRDIRVuYw3l9f66gilUfkG1csZJP3UHvzG4sv+xHzkU=
+github.com/sap/component-operator-runtime v0.3.103 h1:iRCqD6I/3j5i+lRmjOdB+QHxtBf9kDjtkDN66zV/YVU=
+github.com/sap/component-operator-runtime v0.3.103/go.mod h1:tETOktfFkvtZovVeibvKMLJLAm32oYb5Li3tU7ThkPs=
 github.com/sap/go-generics v0.2.32 h1:ip5J8BFUWxPJvtEdsjK9CrHgsGeqLtA3nYmIBOMtgJE=
 github.com/sap/go-generics v0.2.32/go.mod h1:sp7WNwGuu8dapfhzJIzugANpSq8D3H/YClbCl8fbPgQ=
 github.com/shopspring/decimal v1.4.0 h1:bxl37RwXBklmTi0C79JfXCEBD1cqqHt0bbgBAGFp81k=
 github.com/shopspring/decimal v1.4.0/go.mod h1:gawqmDU56v4yIKSwfBSFip1HdCCXN8/+DMd9qYNcwME=
 github.com/spf13/afero v1.6.0 h1:xoax2sJ2DT8S8xA2paPFjDCScCNeWsg75VG0DLRreiY=
 github.com/spf13/afero v1.6.0/go.mod h1:Ai8FlHk4v/PARR026UzYexafAt9roJ7LcLMAmO6Z93I=
+github.com/spf13/afero v1.12.0/go.mod h1:ZTlWwG4/ahT8W7T0WQ5uYmjI9duaLQGy3Q2OAl4sk/4=
 github.com/spf13/cast v1.9.2 h1:SsGfm7M8QOFtEzumm7UZrZdLLquNdzFYfIbEXntcFbE=
 github.com/spf13/cast v1.9.2/go.mod h1:jNfB8QC9IA6ZuY2ZjDp0KtFO2LZZlg4S/7bzP6qqeHo=
 github.com/spf13/cobra v1.9.1 h1:CXSaggrXdbHK9CF+8ywj8Amf7PBRmPCOJugH954Nnlo=
@@ -288,6 +291,7 @@ sigs.k8s.io/controller-runtime v0.21.0 h1:CYfjpEuicjUecRk+KAeyYh+ouUBn4llGyDYytI
 sigs.k8s.io/controller-runtime v0.21.0/go.mod h1:OSg14+F65eWqIu4DceX7k/+QRAbTTvxeQSNSOQpukWM=
 sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250122230437-09740a350f8a h1:iE3r6TxWYGdZ5kdOlGlyCUhqYQoDawGrI9z2tGsZ+Xg=
 sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250122230437-09740a350f8a/go.mod h1:Is2SwCWbWAoyGVoVBA627n1SWhWaEwUhaIYSEbtzHT4=
+sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250604165838-d6126d850224/go.mod h1:zxemiV1fQ3IJnXX0VeOb6qbHp2Wtv3s1w+gftNeHWTg=
 sigs.k8s.io/controller-tools v0.17.1 h1:bQ+dKCS7jY9AgpefenBDtm6geJZCHVKbegpLynxgyus=
 sigs.k8s.io/controller-tools v0.17.1/go.mod h1:3QXAdrmdxYuQ4MifvbCAFD9wLXn7jylnfBPYS4yVDdc=
 sigs.k8s.io/gateway-api v1.1.0 h1:DsLDXCi6jR+Xz8/xd0Z1PYl2Pn0TyaFMOPPZIj4inDM=
