@@ -24,12 +24,15 @@ type ValkeySpec struct {
 	Replicas                                int `json:"replicas,omitempty"`
 	component.KubernetesPodProperties       `json:",inline"`
 	component.KubernetesContainerProperties `json:",inline"`
-	Sidecars                                []corev1.Container     `json:"sidecars,omitempty"`
-	Sentinel                                *SentinelProperties    `json:"sentinel,omitempty"`
-	Metrics                                 *MetricsProperties     `json:"metrics,omitempty"`
-	TLS                                     *TLSProperties         `json:"tls,omitempty"`
-	Persistence                             *PersistenceProperties `json:"persistence,omitempty"`
-	Binding                                 *BindingProperties     `json:"binding,omitempty"`
+	Sidecars                                []corev1.Container         `json:"sidecars,omitempty"`
+	Sentinel                                *SentinelProperties        `json:"sentinel,omitempty"`
+	Metrics                                 *MetricsProperties         `json:"metrics,omitempty"`
+	TLS                                     *TLSProperties             `json:"tls,omitempty"`
+	Persistence                             *PersistenceProperties     `json:"persistence,omitempty"`
+	Binding                                 *BindingProperties         `json:"binding,omitempty"`
+	Image                                   *ImageProperties           `json:"image,omitempty"`
+	ImagePullSecret                         *ImagePullSecretProperties `json:"imagePullSecret,omitempty"`
+	Auth                                    *AuthProperties            `json:"auth,omitempty"`
 }
 
 // SentinelProperties models attributes of the sentinel sidecar
@@ -93,6 +96,22 @@ type PersistenceProperties struct {
 type BindingProperties struct {
 	SecretName string  `json:"secretName,omitempty"`
 	Template   *string `json:"template,omitempty"`
+}
+
+// Image reference properties
+type ImageProperties struct {
+	Repository string `json:"repository"`
+	Tag string `json:"tag"`
+}
+
+// Image pull secret properties
+type ImagePullSecretProperties struct {
+	Name string `json:"name"`
+}
+
+// Authorization parameters
+type AuthProperties struct {
+	Enabled bool `json:"enabled"`
 }
 
 // ValkeyStatus defines the observed state of Valkey
