@@ -31,7 +31,6 @@ type ValkeySpec struct {
 	Persistence                             *PersistenceProperties     `json:"persistence,omitempty"`
 	Binding                                 *BindingProperties         `json:"binding,omitempty"`
 	Image                                   *ImageProperties           `json:"image,omitempty"`
-	ImagePullSecret                         *ImagePullSecretProperties `json:"imagePullSecret,omitempty"`
 	Auth                                    *AuthProperties            `json:"auth,omitempty"`
 }
 
@@ -98,18 +97,19 @@ type BindingProperties struct {
 	Template   *string `json:"template,omitempty"`
 }
 
-// Image reference properties
+// Image pull properties
 type ImageProperties struct {
-	Repository string `json:"repository"`
-	Tag string `json:"tag"`
+	Repository string                     `json:"repository,omitempty"`
+	Tag string                            `json:"tag,omitempty"`
+	PullSecret *ImagePullSecretProperties `json:"pullSecret,omitempty"`
 }
 
 // Image pull secret properties
 type ImagePullSecretProperties struct {
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 
-// Authorization parameters
+// Authentication properties
 type AuthProperties struct {
 	Enabled bool `json:"enabled"`
 }

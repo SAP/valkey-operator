@@ -19,7 +19,7 @@ image:
   registry: null
   repository: {{ .repository }}
   tag: {{ .tag }}
-{{- with .imagePullSecret }}
+{{- with .pullSecret }}
   pullSecrets:
     - {{ .name }}
 {{- end }}
