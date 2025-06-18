@@ -14,15 +14,30 @@ fullnameOverride: {{ $fullname }}
 {{- $bindingSecretName = printf "%s-binding" $fullname }}
 {{- end }}
 
-{{- with .Version}}
+{{- with .image }}
 image:
-  tag: {{ . }}
+  registry: null
+  repository: {{ .repository }}
+  tag: {{ .tag }}
+{{- with .pullSecret }}
+  pullSecrets:
+    - {{ .name }}
+{{- end }}
+{{- end }}
+
+{{- with .auth }}
+auth:
+  enabled: {{ .enabled }}
 {{- end }}
 
 {{- if $persistenceEnabled }}
 {{- with .persistence.storageClass }}
 global:
   storageClass: {{ . }}
+{{- end }}
+{{- with .imagePullSecret }}
+  imagePullSecrets:
+    - name: {{ .name }}
 {{- end }}
 {{- end }}
 
@@ -82,7 +97,7 @@ primary:
     {{- end }}
   {{- if .persistence }}
   {{- with .persistence.extraVolumes }}
-  extraVolumes: 
+  extraVolumes:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -91,8 +106,8 @@ primary:
   {{- with .sidecars }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- end }}   
-  
+  {{- end }}
+
 replica:
   replicaCount: {{ ternary .replicas (max (sub .replicas 1) 0) $sentinelEnabled }}
   {{- with .nodeSelector }}
@@ -143,16 +158,16 @@ replica:
     {{- end }}
   {{- if .persistence }}
   {{- with .persistence.extraVolumes }}
-  extraVolumes: 
+  extraVolumes:
     {{- toYaml . | nindent 4 }}
-  {{- end }} 
+  {{- end }}
   {{- end }}
   {{- if .sidecars }}
   sidecars:
   {{- with .sidecars }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- end }}   
+  {{- end }}
 
 {{- if $sentinelEnabled }}
 sentinel:
@@ -191,7 +206,7 @@ metrics:
   {{- with .metrics.prometheusRule }}
   prometheusRule:
     {{- toYaml . | nindent 4 }}
-  {{- end }}{{- end }}  
+  {{- end }}{{- end }}
 {{- end }}
 
 {{- if $tlsEnabled }}
