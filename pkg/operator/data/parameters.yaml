@@ -86,6 +86,10 @@ primary:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
+  {{- with .ExtraEnvVars }}
+  extraEnvVars:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- if .sidecars }}
   sidecars:
   {{- with .sidecars }}
@@ -147,6 +151,10 @@ replica:
     {{- toYaml . | nindent 4 }}
   {{- end }} 
   {{- end }}
+  {{- with .ExtraEnvVars }}
+  extraEnvVars:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- if .sidecars }}
   sidecars:
   {{- with .sidecars }}
@@ -167,6 +175,10 @@ sentinel:
   {{- end }}
   {{- with .sentinel.securityContext }}
   containerSecurityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .ExtraEnvVars }}
+  extraEnvVars:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}

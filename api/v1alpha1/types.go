@@ -30,6 +30,9 @@ type ValkeySpec struct {
 	TLS                                     *TLSProperties         `json:"tls,omitempty"`
 	Persistence                             *PersistenceProperties `json:"persistence,omitempty"`
 	Binding                                 *BindingProperties     `json:"binding,omitempty"`
+	// ExtraEnvVars allows passing additional environment variables to the Valkey primary node.
+	// +optional
+	ExtraEnvVars []corev1.EnvVar `json:"extraEnvVars,omitempty"`
 }
 
 // SentinelProperties models attributes of the sentinel sidecar
