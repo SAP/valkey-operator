@@ -1084,6 +1084,10 @@ spec:
                   - name
                   type: object
                 type: array
+              extraFlags:
+                items:
+                  type: string
+                type: array
               metrics:
                 description: MetricsProperties models attributes of the metrics exporter
                   sidecar

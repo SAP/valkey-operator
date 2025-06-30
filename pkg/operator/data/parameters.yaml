@@ -90,6 +90,10 @@ primary:
   extraEnvVars:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  {{- with .extraFlags }}
+  extraFlags:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- if .sidecars }}
   sidecars:
   {{- with .sidecars }}
@@ -153,6 +157,10 @@ replica:
   {{- end }}
   {{- with .extraEnvVars }}
   extraEnvVars:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .extraFlags }}
+  extraFlags:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- if .sidecars }}
