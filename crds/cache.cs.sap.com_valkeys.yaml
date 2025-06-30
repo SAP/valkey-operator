@@ -968,8 +968,6 @@ spec:
                     type: string
                 type: object
               extraEnvVars:
-                description: ExtraEnvVars allows passing additional environment variables
-                  to the Valkey primary node.
                 items:
                   description: EnvVar represents an environment variable present in
                     a Container.
