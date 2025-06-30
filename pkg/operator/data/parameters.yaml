@@ -86,7 +86,7 @@ primary:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  {{- with .ExtraEnvVars }}
+  {{- with .extraEnvVars }}
   extraEnvVars:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -151,7 +151,7 @@ replica:
     {{- toYaml . | nindent 4 }}
   {{- end }} 
   {{- end }}
-  {{- with .ExtraEnvVars }}
+  {{- with .extraEnvVars }}
   extraEnvVars:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -177,7 +177,7 @@ sentinel:
   containerSecurityContext:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .ExtraEnvVars }}
+  {{- with .extraEnvVars }}
   extraEnvVars:
     {{- toYaml . | nindent 4 }}
   {{- end }}
