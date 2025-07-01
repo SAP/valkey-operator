@@ -30,6 +30,8 @@ type ValkeySpec struct {
 	TLS                                     *TLSProperties         `json:"tls,omitempty"`
 	Persistence                             *PersistenceProperties `json:"persistence,omitempty"`
 	Binding                                 *BindingProperties     `json:"binding,omitempty"`
+	ExtraEnvVars                            []corev1.EnvVar        `json:"extraEnvVars,omitempty"`
+	ExtraFlags                              []string               `json:"extraFlags,omitempty"`
 }
 
 // SentinelProperties models attributes of the sentinel sidecar
