@@ -15,7 +15,9 @@
   "ignoreDeps": [
     "docker.io/bitnami/redis",
     "docker.io/bitnami/redis-sentinel",
-    "docker.io/bitnami/redis-exporter"
+    "docker.io/bitnami/redis-exporter",
+    "docker.io/bitnami/valkey",
+    "docker.io/bitnami/valkey-sentinel"
   ],
   "packageRules": [
     {
