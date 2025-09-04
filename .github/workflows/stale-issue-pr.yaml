@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Mark stale issues and PRs
-      uses: actions/stale@v9.1.0  # Use the latest version of the Stale Action
+      uses: actions/stale@v10.0.0  # Use the latest version of the Stale Action
       with:
         # Label to apply to stale issues
         stale-issue-label: 'stale'
