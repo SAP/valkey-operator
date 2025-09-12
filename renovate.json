@@ -1,8 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "labels": [
-    "dependencies",
-    "sap-cs-devops"
+    "dependencies"
   ],
   "extends": [
     "config:base"
