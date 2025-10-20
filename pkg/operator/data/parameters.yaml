@@ -14,10 +14,9 @@ fullnameOverride: {{ $fullname }}
 {{- $bindingSecretName = printf "%s-binding" $fullname }}
 {{- end }}
 
-{{- with .Version}}
 image:
   repository: bitnamilegacy/valkey
-  {{- with .version}}
+  {{- with .Version}}
   tag: {{ . }}
   {{- end }}
 
