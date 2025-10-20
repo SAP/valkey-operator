@@ -14,10 +14,11 @@ fullnameOverride: {{ $fullname }}
 {{- $bindingSecretName = printf "%s-binding" $fullname }}
 {{- end }}
 
-{{- with .Version}}
 image:
+  repository: bitnamilegacy/valkey
+  {{- with .Version}}
   tag: {{ . }}
-{{- end }}
+  {{- end }}
 
 {{- if $persistenceEnabled }}
 {{- with .persistence.storageClass }}
@@ -173,10 +174,11 @@ replica:
 {{- if $sentinelEnabled }}
 sentinel:
   enabled: true
-  {{- with .Version }}
   image:
+    repository: bitnamilegacy/valkey-sentinel
+    {{- with .version }}
     tag: {{ . }}
-  {{- end }}
+    {{- end }}
   {{- with .sentinel.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
@@ -194,6 +196,8 @@ sentinel:
 {{- if $metricsEnabled }}
 metrics:
   enabled: true
+  image:
+    repository: bitnamilegacy/redis-exporter
   {{- with .metrics.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
