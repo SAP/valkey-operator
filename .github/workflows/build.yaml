@@ -118,7 +118,7 @@ jobs:
         labels: ${{ steps.extract-metadata.outputs.labels }}
 
     - name: Upload Docker image archive
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: image.tar
         path: ${{ runner.temp }}/image.tar
