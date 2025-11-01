@@ -6,14 +6,14 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cert-manager/cert-manager v1.19.1
 	github.com/google/uuid v1.6.0
-	github.com/onsi/ginkgo/v2 v2.27.1
+	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.86.1
 	github.com/redis/go-redis/v9 v9.14.1
-	github.com/sap/admission-webhook-runtime v0.1.73
-	github.com/sap/component-operator-runtime v0.3.115
-	github.com/sap/go-generics v0.2.42
+	github.com/sap/admission-webhook-runtime v0.1.74
+	github.com/sap/component-operator-runtime v0.3.116
+	github.com/sap/go-generics v0.2.43
 	golang.org/x/mod v0.29.0
 	k8s.io/api v0.34.1
 	k8s.io/apiextensions-apiserver v0.34.1
@@ -22,7 +22,7 @@ require (
 	k8s.io/code-generator v0.34.1
 	k8s.io/kube-aggregator v0.34.1
 	sigs.k8s.io/controller-runtime v0.22.3
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251020210837-fb2beabd029b
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251101125202-100354ae3715
 	sigs.k8s.io/controller-tools v0.19.0
 	sigs.k8s.io/yaml v1.6.0
 )
