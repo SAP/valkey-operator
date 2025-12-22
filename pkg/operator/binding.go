@@ -23,17 +23,23 @@ import (
 func reconcileBinding(ctx context.Context, client client.Client, valkey *operatorv1alpha1.Valkey) error {
 	params := make(map[string]any)
 
+	// Use cluster domain from spec, defaulting to "cluster.local" for backward compatibility
+	clusterDomain := valkey.Spec.ClusterDomain
+	if clusterDomain == "" {
+		clusterDomain = "cluster.local"
+	}
+
 	if valkey.Spec.Sentinel != nil && valkey.Spec.Sentinel.Enabled {
 		params["sentinelEnabled"] = true
-		params["host"] = fmt.Sprintf("valkey-%s.%s.svc.cluster.local", valkey.Name, valkey.Namespace)
+		params["host"] = fmt.Sprintf("valkey-%s.%s.svc.%s", valkey.Name, valkey.Namespace, clusterDomain)
 		params["port"] = 6379
-		params["sentinelHost"] = fmt.Sprintf("valkey-%s.%s.svc.cluster.local", valkey.Name, valkey.Namespace)
+		params["sentinelHost"] = fmt.Sprintf("valkey-%s.%s.svc.%s", valkey.Name, valkey.Namespace, clusterDomain)
 		params["sentinelPort"] = 26379
 		params["primaryName"] = "myprimary"
 	} else {
-		params["primaryHost"] = fmt.Sprintf("valkey-%s-primary.%s.svc.cluster.local", valkey.Name, valkey.Namespace)
+		params["primaryHost"] = fmt.Sprintf("valkey-%s-primary.%s.svc.%s", valkey.Name, valkey.Namespace, clusterDomain)
 		params["primaryPort"] = 6379
-		params["replicaHost"] = fmt.Sprintf("valkey-%s-replicas.%s.svc.cluster.local", valkey.Name, valkey.Namespace)
+		params["replicaHost"] = fmt.Sprintf("valkey-%s-replicas.%s.svc.%s", valkey.Name, valkey.Namespace, clusterDomain)
 		params["replicaPort"] = 6379
 	}
 

@@ -967,6 +967,10 @@ spec:
                   template:
                     type: string
                 type: object
+              clusterDomain:
+                default: cluster.local
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                type: string
               extraEnvVars:
                 items:
                   description: EnvVar represents an environment variable present in
