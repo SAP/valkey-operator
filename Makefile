@@ -3,9 +3,15 @@
 # Set the year for SPDX header updates (default: current year)
 YEAR ?= $(shell date +%Y)
 
-.PHONY: update-go-header-year
-update-go-header-year: ## Update year in all Go source file headers (usage: make update-go-header-year YEAR=2026)
-	find . -name "*.go" -type f -exec sed -i "s/[0-9]\{4\} SAP SE or an SAP affiliate company and valkey-operator contributors/$(YEAR) SAP SE or an SAP affiliate company and valkey-operator contributors/g" {} +
+.PHONY: update-year-in-headers
+update-year-in-headers: ## Update SPDX year in file headers to $(YEAR)
+    # Go + TXT + MD
+	@find . -type f \( -name "*.go" -o -name "*.txt" -o -name "*.md" \) -exec sed -i \
+    's/^SPDX-FileCopyrightText: [0-9]\{4\}\( SAP SE or an SAP affiliate company and [^"]\+ contributors\)/SPDX-FileCopyrightText: $(YEAR)\1/' {} +
+
+    # TOML
+	@find . -type f -name "*.toml" -exec sed -i \
+    's/^SPDX-FileCopyrightText = "[0-9]\{4\}\( SAP SE or an SAP affiliate company and [^"]\+ contributors\)"/SPDX-FileCopyrightText = "$(YEAR)\1"/' {} +
 # Image URL to use all building/pushing image targets
 IMG ?= valkey-operator:latest
 # K8s version used by envtest
