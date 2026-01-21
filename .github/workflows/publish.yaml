@@ -42,7 +42,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -92,7 +92,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup regctl
       uses: regclient/actions/regctl-installer@main
@@ -138,10 +138,10 @@ jobs:
         echo "chart_directory=$chart_directory" >> $GITHUB_OUTPUT
 
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Checkout chart repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: ${{ steps.prepare.outputs.chart_repository }}
         path: chart-repository

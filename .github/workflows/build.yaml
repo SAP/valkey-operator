@@ -25,7 +25,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup go
       uses: actions/setup-go@v6
@@ -82,7 +82,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -118,7 +118,7 @@ jobs:
         labels: ${{ steps.extract-metadata.outputs.labels }}
 
     - name: Upload Docker image archive
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: image.tar
         path: ${{ runner.temp }}/image.tar
