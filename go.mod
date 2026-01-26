@@ -4,16 +4,16 @@ go 1.25.6
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/cert-manager/cert-manager v1.19.1
+	github.com/cert-manager/cert-manager v1.19.2
 	github.com/google/uuid v1.6.0
-	github.com/onsi/ginkgo/v2 v2.27.2
+	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.88.0
-	github.com/redis/go-redis/v9 v9.17.2
-	github.com/sap/admission-webhook-runtime v0.1.73
-	github.com/sap/component-operator-runtime v0.3.115
-	github.com/sap/go-generics v0.2.42
+	github.com/redis/go-redis/v9 v9.17.3
+	github.com/sap/admission-webhook-runtime v0.1.83
+	github.com/sap/component-operator-runtime v0.3.129
+	github.com/sap/go-generics v0.2.50
 	golang.org/x/mod v0.32.0
 	k8s.io/api v0.35.0
 	k8s.io/apiextensions-apiserver v0.35.0
@@ -22,7 +22,7 @@ require (
 	k8s.io/code-generator v0.35.0
 	k8s.io/kube-aggregator v0.35.0
 	sigs.k8s.io/controller-runtime v0.23.0
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251020210837-fb2beabd029b
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260125161707-82cc073adb06
 	sigs.k8s.io/controller-tools v0.20.0
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -54,8 +54,6 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250820193118-f64d9cf942d6 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
-	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -109,5 +107,5 @@ require (
 	sigs.k8s.io/gateway-api v1.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.1 // indirect
 )
