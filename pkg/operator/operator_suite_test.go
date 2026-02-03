@@ -360,6 +360,47 @@ var _ = Describe("Deploy Valkey", func() {
 		}
 		Expect(bindingSecret.Data).To(Equal(expectedSecretData))
 	})
+
+	It("should deploy Valkey with custom cluster domain", func() {
+		valkey := &operatorv1alpha1.Valkey{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: namespace,
+				Name:      "test",
+			},
+			Spec: operatorv1alpha1.ValkeySpec{
+				Replicas:      2,
+				ClusterDomain: "kube.prod",
+			},
+		}
+
+		err := cli.Create(ctx, valkey)
+		Expect(err).NotTo(HaveOccurred())
+		Eventually(func() error {
+			if err := cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: valkey.Name}, valkey); err != nil {
+				return err
+			}
+			if valkey.Status.ObservedGeneration != valkey.Generation || valkey.Status.State != component.StateReady {
+				return fmt.Errorf("again")
+			}
+			return nil
+		}, "10s", "100ms").Should(Succeed())
+
+		authSecret := &corev1.Secret{}
+		err = cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: fmt.Sprintf("valkey-%s", valkey.Name)}, authSecret)
+		Expect(err).NotTo(HaveOccurred())
+
+		bindingSecret := &corev1.Secret{}
+		err = cli.Get(ctx, types.NamespacedName{Namespace: valkey.Namespace, Name: fmt.Sprintf("valkey-%s-binding", valkey.Name)}, bindingSecret)
+		Expect(err).NotTo(HaveOccurred())
+		expectedSecretData := map[string][]byte{
+			"primaryHost": []byte(fmt.Sprintf("valkey-%s-primary.%s.svc.kube.prod", valkey.Name, valkey.Namespace)),
+			"primaryPort": []byte("6379"),
+			"replicaHost": []byte(fmt.Sprintf("valkey-%s-replicas.%s.svc.kube.prod", valkey.Name, valkey.Namespace)),
+			"replicaPort": []byte("6379"),
+			"password":    authSecret.Data["valkey-password"],
+		}
+		Expect(bindingSecret.Data).To(Equal(expectedSecretData))
+	})
 })
 
 func createNamespace() string {

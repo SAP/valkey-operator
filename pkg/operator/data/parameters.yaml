@@ -14,6 +14,8 @@ fullnameOverride: {{ $fullname }}
 {{- $bindingSecretName = printf "%s-binding" $fullname }}
 {{- end }}
 
+{{- $clusterDomain := (dig "clusterDomain" "cluster.local" .) }}
+
 image:
   repository: bitnamilegacy/valkey
   {{- with .Version}}
@@ -232,6 +234,8 @@ tls:
   {{- end }}
 {{- end }}
 
+clusterDomain: {{ $clusterDomain }}
+
 networkPolicy:
   enabled: true
   extraEgress:
@@ -256,27 +260,27 @@ extraDeploy:
     secretName: {{ printf "%s-tls" $fullname }}
     commonName: {{ $fullname }}
     dnsNames:
-    - '{{ printf "%s.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "%s.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "%s.%s.svc" $fullname .Namespace }}'
     - '{{ printf "%s.%s" $fullname .Namespace }}'
     - '{{ printf "%s" $fullname }}'
-    - '{{ printf "*.%s.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "*.%s.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "*.%s.%s.svc" $fullname .Namespace }}'
     - '{{ printf "*.%s.%s" $fullname .Namespace }}'
     - '{{ printf "*.%s" $fullname }}'
-    - '{{ printf "%s-primary.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "%s-primary.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "%s-primary.%s.svc" $fullname .Namespace }}'
     - '{{ printf "%s-primary.%s" $fullname .Namespace }}'
     - '{{ printf "%s-primary" $fullname }}'
-    - '{{ printf "*.%s-primary.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "*.%s-primary.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "*.%s-primary.%s.svc" $fullname .Namespace }}'
     - '{{ printf "*.%s-primary.%s" $fullname .Namespace }}'
     - '{{ printf "*.%s-primary" $fullname }}'
-    - '{{ printf "%s-headless.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "%s-headless.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "%s-headless.%s.svc" $fullname .Namespace }}'
     - '{{ printf "%s-headless.%s" $fullname .Namespace }}'
     - '{{ printf "%s-headless" $fullname }}'
-    - '{{ printf "*.%s-headless.%s.svc.cluster.local" $fullname .Namespace }}'
+    - '{{ printf "*.%s-headless.%s.svc.%s" $fullname .Namespace $clusterDomain }}'
     - '{{ printf "*.%s-headless.%s.svc" $fullname .Namespace }}'
     - '{{ printf "*.%s-headless.%s" $fullname .Namespace }}'
     - '{{ printf "*.%s-headless" $fullname }}'

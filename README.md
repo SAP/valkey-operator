@@ -109,6 +109,32 @@ In that go template, the following variables may be used:
 - `.tlsEnabled` (whether TLS encryption is enabled or not)
 - `.caData` (CA certificate that clients may use to connect to valkey)
 
+### Custom cluster domain
+
+By default, Valkey services are accessed using DNS names with the `cluster.local` domain suffix (e.g., `valkey-test.namespace.svc.cluster.local`). 
+If your Kubernetes cluster uses a custom cluster domain, you can configure it using the `spec.clusterDomain` field:
+
+```yaml
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: test
+spec:
+  clusterDomain: kube.prod
+  replicas: 3
+  sentinel:
+    enabled: true
+```
+
+This will result in DNS names like:
+- `valkey-test.namespace.svc.kube.prod` instead of `valkey-test.namespace.svc.cluster.local`
+
+The cluster domain value is used for:
+- Service DNS names in the binding secret
+- TLS certificate DNS names (when using cert-manager)
+
+If not specified, the default value `cluster.local` is used for backward compatibility.
+
 ### Customize pod settings
 
 The following attributes allow to tweak the created pods/containers:

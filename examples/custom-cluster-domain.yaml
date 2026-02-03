@@ -1,0 +1,15 @@
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: valkey-custom-domain
+spec:
+  # Custom cluster domain for environments that don't use the default cluster.local
+  clusterDomain: kube.prod
+  replicas: 3
+  sentinel:
+    enabled: true
+  metrics:
+    enabled: true
+  tls:
+    enabled: true
+    certManager: {}
