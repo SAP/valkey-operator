@@ -15,8 +15,12 @@ fullnameOverride: {{ $fullname }}
 {{- end }}
 
 image:
+  {{- with (dig "image" "" .) }}
+  repository: {{ . }}
+  {{- else }}
   repository: valkey/valkey
-  {{- with .Version }}
+  {{- end }}
+  {{- with .version }}
   tag: {{ . }}
   {{- end }}
 
@@ -26,7 +30,7 @@ auth:
   {{- if $authEnabled }}
   usersExistingSecret: {{ $authSecretName }}
   aclConfig: |
-    user default on >{{ $valkeyPassword }} ~* &* +@all
+    user valkey-password on >{{ $valkeyPassword }} ~* &* +@all
   {{- end }}
 
 # TLS configuration
@@ -46,7 +50,7 @@ tls:
 replica:
   enabled: true
   replicas: {{ max (sub $replicasCount 1) 0 }}
-  replicationUser: "default"
+  replicationUser: "valkey-password"
   disklessSync: false
   minReplicasToWrite: 0
   minReplicasMaxLag: 10
@@ -79,6 +83,11 @@ dataStorage:
 metrics:
   enabled: {{ dig "metrics" "enabled" false . }}
   {{- if dig "metrics" "enabled" false . }}
+  {{- with (dig "metrics" "image" "" .) }}
+  exporter:
+    image:
+      repository: {{ . }}
+  {{- end }}
   {{- if .metrics.serviceMonitor }}
   serviceMonitor:
     enabled: {{ dig "metrics" "serviceMonitor" "enabled" false . }}

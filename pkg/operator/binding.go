@@ -8,18 +8,11 @@ package operator
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/sha256"
-	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/hex"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"math/big"
 	"text/template"
-	"time"
 
 	"github.com/Masterminds/sprig/v3"
 	operatorv1alpha1 "github.com/sap/valkey-operator/api/v1alpha1"
@@ -29,6 +22,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	kyaml "sigs.k8s.io/yaml"
+
+	"github.com/sap/valkey-operator/internal/tlsutil"
 )
 
 func reconcileBinding(ctx context.Context, client client.Client, valkey *operatorv1alpha1.Valkey) error {
@@ -71,7 +66,6 @@ func reconcileBinding(ctx context.Context, client client.Client, valkey *operato
 			},
 			Type: corev1.SecretTypeOpaque,
 			Data: map[string][]byte{
-				"default":         []byte(password),
 				"valkey-password": []byte(password),
 			},
 		}
@@ -85,10 +79,6 @@ func reconcileBinding(ctx context.Context, client client.Client, valkey *operato
 		updated := false
 		if _, ok := authSecret.Data["valkey-password"]; !ok {
 			authSecret.Data["valkey-password"] = []byte(password)
-			updated = true
-		}
-		if _, ok := authSecret.Data["default"]; !ok {
-			authSecret.Data["default"] = []byte(password)
 			updated = true
 		}
 		if updated {
@@ -120,7 +110,7 @@ func reconcileBinding(ctx context.Context, client client.Client, valkey *operato
 		// Create TLS secret if it doesn't exist
 		if !tlsSecretFound {
 			serviceName := fmt.Sprintf("valkey-%s", valkey.Name)
-			caCert, tlsCert, tlsKey, err := generateSelfSignedCert(serviceName, valkey.Namespace)
+			caCert, tlsCert, tlsKey, err := tlsutil.GenerateSelfSignedCert(serviceName, valkey.Namespace)
 			if err != nil {
 				return fmt.Errorf("failed to generate TLS certificate: %w", err)
 			}
@@ -222,70 +212,4 @@ func deriveDefaultPassword(namespace, fullname string) string {
 		return hexSum[:32]
 	}
 	return hexSum
-}
-
-// generateSelfSignedCert generates a self-signed certificate for testing/development
-func generateSelfSignedCert(serviceName, namespace string) (caCert, tlsCert, tlsKey []byte, err error) {
-	// Generate CA private key
-	caKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to generate CA key: %w", err)
-	}
-
-	// Create CA certificate template
-	caTemplate := &x509.Certificate{
-		SerialNumber: big.NewInt(1),
-		Subject: pkix.Name{
-			Organization: []string{"Valkey Operator"},
-			CommonName:   "Valkey CA",
-		},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(10, 0, 0), // 10 years
-		IsCA:                  true,
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-	}
-
-	// Create CA certificate
-	caCertDER, err := x509.CreateCertificate(rand.Reader, caTemplate, caTemplate, &caKey.PublicKey, caKey)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to create CA certificate: %w", err)
-	}
-
-	// PEM encode CA certificate
-	caCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caCertDER})
-
-	// Generate server private key
-	serverKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to generate server key: %w", err)
-	}
-
-	// Create server certificate template
-	serverTemplate := &x509.Certificate{
-		SerialNumber: big.NewInt(2),
-		Subject: pkix.Name{
-			Organization: []string{"Valkey Operator"},
-			CommonName:   serviceName,
-		},
-		NotBefore:   time.Now(),
-		NotAfter:    time.Now().AddDate(10, 0, 0), // 10 years
-		KeyUsage:    x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
-		DNSNames:    []string{serviceName, fmt.Sprintf("%s.%s", serviceName, namespace), fmt.Sprintf("%s.%s.svc", serviceName, namespace), fmt.Sprintf("%s.%s.svc.cluster.local", serviceName, namespace)},
-	}
-
-	// Create server certificate signed by CA
-	serverCertDER, err := x509.CreateCertificate(rand.Reader, serverTemplate, caTemplate, &serverKey.PublicKey, caKey)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to create server certificate: %w", err)
-	}
-
-	// PEM encode server certificate
-	serverCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: serverCertDER})
-
-	// PEM encode server private key
-	serverKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(serverKey)})
-
-	return caCertPEM, serverCertPEM, serverKeyPEM, nil
 }

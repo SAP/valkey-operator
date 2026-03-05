@@ -1127,12 +1127,16 @@ spec:
                 items:
                   type: string
                 type: array
+              image:
+                type: string
               metrics:
                 description: MetricsProperties models attributes of the metrics exporter
                   sidecar
                 properties:
                   enabled:
                     type: boolean
+                  image:
+                    type: string
                   monitor:
                     properties:
                       additionalLabels:
@@ -4082,6 +4086,8 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  image:
+                    type: string
                   resources:
                     description: ResourceRequirements describes the compute resource
                       requirements.

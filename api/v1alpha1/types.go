@@ -19,6 +19,7 @@ import (
 // ValkeySpec defines the desired state of Valkey
 type ValkeySpec struct {
 	Version string `json:"version,omitempty"`
+	Image   string `json:"image,omitempty"`
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:default=1
 	Replicas                                int `json:"replicas,omitempty"`
@@ -36,7 +37,8 @@ type ValkeySpec struct {
 
 // SentinelProperties models attributes of the sentinel sidecar
 type SentinelProperties struct {
-	Enabled                                 bool `json:"enabled,omitempty"`
+	Enabled                                 bool   `json:"enabled,omitempty"`
+	Image                                   string `json:"image,omitempty"`
 	component.KubernetesContainerProperties `json:",inline"`
 }
 
@@ -44,6 +46,7 @@ type SentinelProperties struct {
 type MetricsProperties struct {
 	Enabled                                 bool `json:"enabled,omitempty"`
 	component.KubernetesContainerProperties `json:",inline"`
+	Image                                   string                           `json:"image,omitempty"`
 	ServiceMonitor                          *MetricsServiceMonitorProperties `json:"monitor,omitempty"`
 	PrometheusRule                          *MetricsPrometheusRuleProperties `json:"prometheusRule,omitempty"`
 }

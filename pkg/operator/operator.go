@@ -103,7 +103,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 	if err != nil {
 		return errors.Wrap(err, "error initializing parameter transformer")
 	}
-	objectTransformer := transformer.NewObjectTransformer()
+	objectTransformer := transformer.NewObjectTransformer(mgr.GetClient())
 	resourceGenerator, err := helm.NewTransformableHelmGenerator(
 		data,
 		"data/charts/valkey",
