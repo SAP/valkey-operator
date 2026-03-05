@@ -14,12 +14,15 @@
 *.swp
 *.bak
 *.tmp
+*.orig
 *~
 # Various IDEs
 .project
 .idea/
 *.tmproj
-# img folder
-img/
-# Changelog
-CHANGELOG.md
+.vscode/
+
+.github/
+
+# Unit tests (only ignore root-level tests/, not templates/tests/)
+/tests/

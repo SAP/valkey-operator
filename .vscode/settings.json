@@ -1,5 +1,25 @@
 {
     "go.testEnvVars": {
       "KUBEBUILDER_ASSETS": "${workspaceFolder}/bin/k8s/current"
-    }
+    },
+    "workbench.colorCustomizations": {
+      "activityBar.activeBackground": "#0ccfff",
+      "activityBar.background": "#0ccfff",
+      "activityBar.foreground": "#15202b",
+      "activityBar.inactiveForeground": "#15202b99",
+      "activityBarBadge.background": "#df00b3",
+      "activityBarBadge.foreground": "#e7e7e7",
+      "commandCenter.border": "#e7e7e799",
+      "sash.hoverBorder": "#0ccfff",
+      "statusBar.background": "#00add8",
+      "statusBar.foreground": "#e7e7e7",
+      "statusBarItem.hoverBackground": "#0ccfff",
+      "statusBarItem.remoteBackground": "#00add8",
+      "statusBarItem.remoteForeground": "#e7e7e7",
+      "titleBar.activeBackground": "#00add8",
+      "titleBar.activeForeground": "#e7e7e7",
+      "titleBar.inactiveBackground": "#00add899",
+      "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.remoteColor": "#00ADD8"
 }

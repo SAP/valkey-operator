@@ -12,7 +12,11 @@
             "program": "${workspaceFolder}",
             "args": [
                 "--kubeconfig=${workspaceFolder}/tmp/kubeconfig",
+                "--webhook-tls-directory=${workspaceFolder}/tmp/ssl",
                 "--zap-log-level=debug"
+            ],
+            "dlvFlags": [
+                "--check-go-version=false"
             ]
         }
     ]

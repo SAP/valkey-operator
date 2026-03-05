@@ -1,72 +1,42 @@
-{{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
-*/}}
-
-{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled .Values.metrics.service.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "common.names.fullname" . }}
-  namespace: {{ default (include "common.names.namespace" .) .Values.metrics.serviceMonitor.namespace | quote }}
-  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  name: {{ include "valkey.fullname" . }}
+  labels:
+    {{- include "valkey.labels" . | nindent 4 }}
     app.kubernetes.io/part-of: valkey
-    {{- if .Values.metrics.serviceMonitor.additionalLabels }}
-    {{- include "common.tplvalues.render" (dict "value" .Values.metrics.serviceMonitor.additionalLabels "context" $) | nindent 4 }}
+    app.kubernetes.io/component: service-monitor
+    {{- with .Values.metrics.serviceMonitor.extraLabels }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- if .Values.commonAnnotations }}
-  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- with .Values.metrics.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   endpoints:
     - port: {{ .Values.metrics.serviceMonitor.port }}
-      {{- if .Values.metrics.serviceMonitor.interval }}
-      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
       {{- end }}
-      {{- if .Values.metrics.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      {{- with .Values.metrics.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ . }}
       {{- end }}
-      {{- if .Values.metrics.serviceMonitor.honorLabels }}
-      honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels }}
-      {{- end }}
-      {{- with .Values.metrics.serviceMonitor.relabelings }}
-      relabelings: {{- toYaml . | nindent 6 }}
-      {{- end }}
-      {{- if .Values.metrics.serviceMonitor.metricRelabelings }}
-      metricRelabelings: {{- toYaml .Values.metrics.serviceMonitor.metricRelabelings | nindent 6 }}
-      {{- end }}
-      {{- range .Values.metrics.serviceMonitor.additionalEndpoints }}
-    - port: {{ .port }}
-      {{- if .interval }}
-      interval: {{ .interval }}
-      {{- end }}
-      {{- if .scrapeTimeout }}
-      scrapeTimeout: {{ .scrapeTimeout }}
-      {{- end }}
-      {{- if .honorLabels }}
-      honorLabels: {{ .honorLabels }}
+      {{- with .Values.metrics.serviceMonitor.honorLabels }}
+      honorLabels: {{ . }}
       {{- end }}
       {{- with .Values.metrics.serviceMonitor.relabelings }}
-      relabelings: {{- toYaml . | nindent 6 }}
+      relabelings:
+        {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- if .metricRelabelings }}
-      metricRelabelings: {{- toYaml .metricRelabelings | nindent 6 }}
+      {{- with .Values.metrics.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- if .path }}
-      path: {{ .path }}
-      {{- end }}
-      {{- if .params }}
-      params:
-        {{- range $key, $value := .params }}
-        {{ $key }}:
-          {{- range $value }}
-          - {{ . | quote }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
-    {{- end }}
-  {{- if .Values.metrics.serviceMonitor.podTargetLabels }}
-  podTargetLabels: {{- toYaml .Values.metrics.serviceMonitor.podTargetLabels | nindent 4 }}
+  {{- with .Values.metrics.serviceMonitor.podTargetLabels }}
+  podTargetLabels:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.metrics.serviceMonitor.sampleLimit }}
   sampleLimit: {{ . }}
@@ -76,8 +46,9 @@ spec:
   {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ include "common.names.namespace" . | quote }}
+      - {{ .Release.Namespace }}
   selector:
-    matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 6 }}
+    matchLabels:
+      {{- include "valkey.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: metrics
 {{- end }}
