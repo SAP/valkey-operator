@@ -148,10 +148,23 @@ jobs:
         failStepIfUnsuccessful: true
         appSlugFilter: github-actions
 
+
+    - name: Generate release notes
+      id: release_notes
+      if: steps.get_target_release.outputs.create_release == 'true'
+      uses: SAP/cs-actions/generate-release-notes-action@main
+      with:
+        personal-token: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
+        new-tag: ${{ steps.get_target_release.outputs.tag }}
+        previous-tag: ${{ steps.get_current_release.outputs.tag }}
+        target-ref: ${{ steps.get_target_commit.outputs.sha }}
+
     - name: Create Release
       if: steps.get_target_release.outputs.create_release == 'true'
       env:
         GH_TOKEN: ${{ secrets.WORKFLOW_USER_GH_TOKEN }}
       run: |
         gh release create ${{ steps.get_target_release.outputs.tag }} \
-          --target "${{ steps.get_target_commit.outputs.sha }}"
+          --target "${{ steps.get_target_commit.outputs.sha }}" \
+          --title "${{ steps.get_target_release.outputs.tag }}" \
+          --notes "${{ steps.release_notes.outputs.release-notes }}"
