@@ -13,7 +13,7 @@ require (
 	github.com/redis/go-redis/v9 v9.21.0
 	github.com/sap/admission-webhook-runtime v0.1.103
 	github.com/sap/component-operator-runtime v0.3.159
-	github.com/sap/go-generics v0.2.68
+	github.com/sap/go-generics v0.2.69
 	golang.org/x/mod v0.38.0
 	k8s.io/api v0.36.3
 	k8s.io/apiextensions-apiserver v0.36.3
