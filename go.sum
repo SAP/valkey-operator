@@ -180,8 +180,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.93.0 h1:ZIouJCjC8R/XHxzGpOw+/czH9pVzg6wteYhLjJ80XGQ=
-github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.93.0/go.mod h1:rZ+wRKDneCC/jJk24Mdb+6bAc6y/UjRliuMz6U20s6Y=
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.93.1 h1:RP+/GISMkna7VpDx3wa52oYIyIjNU+iQxV6sDnY2uCA=
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.93.1/go.mod h1:rZ+wRKDneCC/jJk24Mdb+6bAc6y/UjRliuMz6U20s6Y=
 github.com/prometheus/client_golang v1.24.1 h1:JnJkREXzWxUdCuPFpIWZiPispT9xVV59uiuyR2bPlnU=
 github.com/prometheus/client_golang v1.24.1/go.mod h1:F+oSRECHg4sse5ucfYpYDeIv/hu68Zo0uoHKetWnzcE=
 github.com/prometheus/client_model v0.6.2 h1:oBsgwpGs7iVziMvrGhE53c/GrLUsZdHnqNwqPLxwZyk=
@@ -197,8 +197,8 @@ github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sap/admission-webhook-runtime v0.1.104 h1:rMAlC0VMQtpJIGkIoDxz2SAZ7gYeu+m0Fsjk1Vo0Z2Q=
 github.com/sap/admission-webhook-runtime v0.1.104/go.mod h1:gnpIDb8Z9dLAdo0oo34Jc/PZdAc7d7k8dyP04a2/kTM=
-github.com/sap/component-operator-runtime v0.3.160 h1:wfrsK0cPI24tYSWd2uNamLwAQ6i2WzD4HsXw67/Fjbo=
-github.com/sap/component-operator-runtime v0.3.160/go.mod h1:/5S7S9LIxaw0c80Rsvy9OLWUV3wUyYYHWfLxFkfwo+Q=
+github.com/sap/component-operator-runtime v0.3.161 h1:TW/udEA3Cb9YfBDRwCG5eCBC9sF9moqj/3ONDbLME58=
+github.com/sap/component-operator-runtime v0.3.161/go.mod h1:fa8uLslDsck/R1rtmNNhqe6T9MUreJs8yPOfKACTXUQ=
 github.com/sap/go-generics v0.2.70 h1:T06iQqGfKwmHSEDJQ2ykyuVCWa8kGGgJ007tGNlsh4E=
 github.com/sap/go-generics v0.2.70/go.mod h1:DAXERYSdB/u0kt/+EOUWMgR7h98s8NbJh46Vz2c4ZpE=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=
