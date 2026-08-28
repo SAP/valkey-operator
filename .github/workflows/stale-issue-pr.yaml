@@ -33,6 +33,10 @@ jobs:
         # Number of days before a stale issue/PR is closed
         days-before-close: 7  # If the stale issue/PR has been inactive for 7 days day, it will be closed
 
+        # Handle issues only — never mark or close pull requests
+        days-before-pr-stale: -1  # -1 disables staling of PRs
+        days-before-pr-close: -1  # -1 disables closing of PRs
+
         # Option to close stale issues and PRs
         close-issue-label: 'closed'  # Close issues that are marked as stale
         close-pr-label: 'closed'  # Close PRs that are marked as stale
