@@ -1,19 +1,19 @@
 module github.com/sap/valkey-operator
 
-go 1.26.6
+go 1.27.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cert-manager/cert-manager v1.21.1
 	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.32.1
-	github.com/onsi/gomega v1.42.1
+	github.com/onsi/gomega v1.43.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.93.1
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/sap/admission-webhook-runtime v0.1.106
 	github.com/sap/component-operator-runtime v0.3.164
-	github.com/sap/go-generics v0.2.71
+	github.com/sap/go-generics v0.2.72
 	golang.org/x/mod v0.40.0
 	k8s.io/api v0.36.4
 	k8s.io/apiextensions-apiserver v0.36.4
