@@ -2,7 +2,9 @@ CHART NAME: {{ .Chart.Name }}
 CHART VERSION: {{ .Chart.Version }}
 APP VERSION: {{ .Chart.AppVersion }}
 
-Did you know there are enterprise versions of the Bitnami catalog? For enhanced secure software supply chain features, unlimited pulls from Docker, LTS support, or application customization, see Bitnami Premium or Tanzu Application Catalog. See https://www.arrow.com/globalecs/na/vendors/bitnami for more information.
+⚠ WARNING: Since August 28th, 2025, only a limited subset of images/charts are available for free.
+    Subscribe to Bitnami Secure Images to receive continued support and security updates.
+    More info at https://bitnami.com and https://github.com/bitnami/containers/issues/83267
 
 ** Please be patient while the chart is being deployed **
 
@@ -60,9 +62,9 @@ For Valkey Sentinel:
 -------------------------------------------------------------------------------
  WARNING
 
-    By specifying ".Values.auth.usePasswordFiles=true" and ".Values.auth.usePasswordFileFromSecret=false"
-    Valkey is expecting that the password is mounted as a file in each pod
-    (by default in /opt/bitnami/valkey/secrets/valkey-password)
+   By specifying auth.usePasswordFiles=true and auth.usePasswordFileFromSecret=false
+   Valkey is expecting that the password is mounted as a file in each pod
+   (by default in /opt/bitnami/valkey/secrets/valkey-password)
 
     Ensure that you specify the respective initContainers in
     both .Values.primary.initContainers and .Values.replica.initContainers
@@ -96,7 +98,7 @@ Valkey can be accessed via port {{ .Values.primary.service.ports.valkey }} on th
 
 {{- end }}
 
-{{ if .Values.auth.enabled }}
+{{- if .Values.auth.enabled }}
 
 To get your password run:
 

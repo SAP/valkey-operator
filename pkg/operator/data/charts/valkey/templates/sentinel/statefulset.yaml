@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{- if or .Release.IsUpgrade (ne .Values.sentinel.service.type "NodePort")  .Values.sentinel.service.nodePorts.valkey -}}
@@ -27,7 +27,7 @@ spec:
   {{- if .Values.replica.updateStrategy }}
   updateStrategy: {{- toYaml .Values.replica.updateStrategy | nindent 4 }}
   {{- end }}
-  {{- if and .Values.replica.minReadySeconds (semverCompare ">= 1.23-0" (include "common.capabilities.kubeVersion" .)) }}
+  {{- if .Values.replica.minReadySeconds }}
   minReadySeconds: {{ .Values.replica.minReadySeconds }}
   {{- end }}
   {{- if .Values.replica.podManagementPolicy }}
@@ -46,7 +46,9 @@ spec:
         {{- end }}
         checksum/health: {{ pick ( include (print $.Template.BasePath "/health-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
         checksum/scripts: {{ pick ( include (print $.Template.BasePath "/scripts-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
+        {{- if include "valkey.valuesBasedSecret" . }}
         checksum/secret: {{ pick ( include (print $.Template.BasePath "/secret.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
+        {{- end }}
         {{- if .Values.replica.podAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.replica.podAnnotations "context" $ ) | nindent 8 }}
         {{- end }}
@@ -58,6 +60,9 @@ spec:
       automountServiceAccountToken: {{ .Values.replica.automountServiceAccountToken }}
       {{- if .Values.replica.hostAliases }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.replica.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.replica.runtimeClassName }}
+      runtimeClassName: {{ .Values.replica.runtimeClassName }}
       {{- end }}
       {{- if .Values.replica.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.replica.podSecurityContext "context" $) | nindent 8 }}
@@ -125,6 +130,11 @@ spec:
           resources: {{- toYaml .Values.volumePermissions.resources | nindent 12 }}
           {{- else if ne .Values.volumePermissions.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.volumePermissions.resourcesPreset) | nindent 12 }}
+          {{- end }}
+          {{- if include "common.fips.enabled" . }}
+          env:
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.volumePermissions.fips "global" .Values.global) | quote }}
           {{- end }}
           volumeMounts:
             - name: empty-dir
@@ -202,6 +212,10 @@ spec:
                   key: {{ template "valkey.secretPasswordKey" . }}
             {{- end }}
             {{- end }}
+            {{- if include "common.fips.enabled" . }}
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.fips "global" .Values.global) | quote }}
+            {{- end }}
             - name: VALKEY_TLS_ENABLED
               value: {{ ternary "yes" "no" .Values.tls.enabled | quote }}
             {{- if .Values.tls.enabled }}
@@ -267,7 +281,7 @@ spec:
             {{- end }}
           {{- end }}
           ports:
-            - name: valkey
+            - name: redis
               containerPort: {{ .Values.replica.containerPorts.valkey }}
           {{- if not .Values.diagnosticMode.enabled }}
           {{- if .Values.replica.customStartupProbe }}
@@ -323,7 +337,7 @@ spec:
               mountPath: /health
             - name: sentinel-data
               mountPath: /opt/bitnami/valkey-sentinel/etc
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: valkey-password
               mountPath: /opt/bitnami/valkey/secrets/
             {{- end }}
@@ -417,6 +431,10 @@ spec:
               value: {{ template "valkey.tlsCertKey" . }}
             - name:  VALKEY_SENTINEL_TLS_CA_FILE
               value: {{ template "valkey.tlsCACert" . }}
+            {{- if include "common.fips.enabled" . }}
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.sentinel.fips "global" .Values.global) | quote }}
+            {{- end }}
             {{- if .Values.tls.dhParamsFilename }}
             - name:  VALKEY_SENTINEL_TLS_DH_PARAMS_FILE
               value: {{ template "valkey.tlsDHParams" . }}
@@ -511,7 +529,7 @@ spec:
             {{- end }}
             - name: sentinel-data
               mountPath: /opt/bitnami/valkey-sentinel/etc
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: valkey-password
               mountPath: /opt/bitnami/valkey/secrets/
             {{- end }}
@@ -546,9 +564,9 @@ spec:
             - /bin/bash
             - -c
             - |
-              if [[ -f '/secrets/valkey-password' ]]; then
-                  export REDIS_PASSWORD=$(cat /secrets/valkey-password)
-              fi
+              {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
+              export REDIS_PASSWORD="$(< $REDIS_PASSWORD_FILE)"
+              {{- end }}
               redis_exporter{{- range $key, $value := .Values.metrics.extraArgs }} --{{ $key }}={{ $value }}{{- end }}
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
@@ -562,13 +580,22 @@ spec:
             {{- if .Values.auth.enabled }}
             - name: REDIS_USER
               value: default
-            {{- if (not .Values.auth.usePasswordFiles) }}
+            {{- if .Values.auth.usePasswordFiles }}
+            - name: REDIS_PASSWORD_FILE
+              value: "/secrets/valkey-password"
+            {{- else }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "valkey.secretName" . }}
                   key: {{ template "valkey.secretPasswordKey" . }}
             {{- end }}
+            {{- end }}
+            {{- if include "common.fips.enabled" . }}
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
+            - name: GODEBUG
+              value: {{ include "common.fips.config" (dict "tech" "golang" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
             {{- end }}
             {{- if .Values.tls.enabled }}
             - name: REDIS_ADDR
@@ -621,7 +648,7 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: valkey-password
               mountPath: /secrets/
             {{- end }}
@@ -650,6 +677,13 @@ spec:
           {{- if .Values.kubectl.resources }}
           resources: {{- toYaml .Values.kubectl.resources | nindent 12 }}
           {{- end }}
+          {{- if include "common.fips.enabled" . }}
+          env:
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.kubectl.fips "global" .Values.global) | quote }}
+            - name: GODEBUG
+              value: {{ include "common.fips.config" (dict "tech" "golang" "fips" .Values.kubectl.fips "global" .Values.global) | quote }}
+          {{- end }}
         {{- end }}
         {{- if .Values.replica.sidecars }}
         {{- include "common.tplvalues.render" (dict "value" .Values.replica.sidecars "context" $) | nindent 8 }}
@@ -671,7 +705,7 @@ spec:
             name: {{ printf "%s-kubectl-scripts" (include "common.names.fullname" .) }}
             defaultMode: 0755
         {{- end }}
-        {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
         - name: valkey-password
           {{ if .Values.auth.usePasswordFileFromSecret }}
           secret:
@@ -773,7 +807,9 @@ spec:
         {{- end }}
         {{- include "common.storage.class" (dict "persistence" .Values.replica.persistence "global" .Values.global) | nindent 8 }}
     {{- if .Values.sentinel.persistence.enabled }}
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: sentinel-data
         {{- $claimLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.sentinel.persistence.labels .Values.commonLabels ) "context" . ) }}
         labels: {{- include "common.labels.matchLabels" ( dict "customLabels" $claimLabels "context" $ ) | nindent 10 }}

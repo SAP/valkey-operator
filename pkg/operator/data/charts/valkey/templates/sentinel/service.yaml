@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{- if or .Release.IsUpgrade (ne .Values.sentinel.service.type "NodePort") .Values.sentinel.service.nodePorts.valkey -}}
@@ -44,11 +44,11 @@ spec:
   {{- if and .Values.sentinel.service.clusterIP (eq .Values.sentinel.service.type "ClusterIP") }}
   clusterIP: {{ .Values.sentinel.service.clusterIP }}
   {{- end }}
-  {{- if .Values.sentinel.service.sessionAffinity }}
+  {{- if ne .Values.sentinel.service.sessionAffinity "None"}}
   sessionAffinity: {{ .Values.sentinel.service.sessionAffinity }}
-  {{- end }}
   {{- if .Values.sentinel.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.sentinel.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- end }}
   {{- end }}
   ports:
     - name: tcp-redis
@@ -132,11 +132,11 @@ spec:
   {{- if and .Values.sentinel.service.clusterIP (eq .Values.sentinel.service.type "ClusterIP") }}
   clusterIP: {{ .Values.sentinel.service.clusterIP }}
   {{- end }}
-  {{- if .Values.sentinel.service.sessionAffinity }}
+  {{- if ne .Values.sentinel.service.sessionAffinity "None"}}
   sessionAffinity: {{ .Values.sentinel.service.sessionAffinity }}
-  {{- end }}
   {{- if .Values.sentinel.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.sentinel.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- end }}
   {{- end }}
   ports:
     - name: tcp-redis

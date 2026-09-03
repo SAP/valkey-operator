@@ -1,6 +1,6 @@
 {{/*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{/* vim: set filetype=mustache: */}}
@@ -19,7 +19,7 @@ These presets are for basic testing and not meant to be used in production
    )
   "micro" (dict 
       "requests" (dict "cpu" "250m" "memory" "256Mi" "ephemeral-storage" "50Mi")
-      "limits" (dict "cpu" "375m" "memory" "384Mi" "ephemeral-storage" "2Gi")
+      "limits" (dict "cpu" "380m" "memory" "384Mi" "ephemeral-storage" "2Gi")
    )
   "small" (dict 
       "requests" (dict "cpu" "500m" "memory" "512Mi" "ephemeral-storage" "50Mi")

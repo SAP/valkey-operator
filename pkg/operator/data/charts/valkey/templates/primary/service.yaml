@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{- if and (not .Values.sentinel.enabled) (gt (int64 .Values.primary.replicaCount) 0) }}
@@ -21,9 +21,7 @@ spec:
   {{- if or (eq .Values.primary.service.type "LoadBalancer") (eq .Values.primary.service.type "NodePort") }}
   externalTrafficPolicy: {{ .Values.primary.service.externalTrafficPolicy | quote }}
   {{- end }}
-  {{- if (semverCompare ">=1.22-0" (include "common.capabilities.kubeVersion" .)) }}
   internalTrafficPolicy: {{ .Values.primary.service.internalTrafficPolicy }}
-  {{- end }}
   {{- if and (eq .Values.primary.service.type "LoadBalancer") (not (empty .Values.primary.service.loadBalancerIP)) }}
   loadBalancerIP: {{ .Values.primary.service.loadBalancerIP }}
   {{- end }}
@@ -36,11 +34,11 @@ spec:
   {{- if and .Values.primary.service.clusterIP (eq .Values.primary.service.type "ClusterIP") }}
   clusterIP: {{ .Values.primary.service.clusterIP }}
   {{- end }}
-  {{- if .Values.primary.service.sessionAffinity }}
+  {{- if ne .Values.primary.service.sessionAffinity "None"}}
   sessionAffinity: {{ .Values.primary.service.sessionAffinity }}
-  {{- end }}
   {{- if .Values.primary.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.primary.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- if .Values.primary.service.externalIPs }}
   externalIPs: {{- include "common.tplvalues.render" (dict "value" .Values.primary.service.externalIPs "context" $) | nindent 4 }}

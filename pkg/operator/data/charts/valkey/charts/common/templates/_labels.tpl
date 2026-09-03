@@ -1,9 +1,17 @@
 {{/*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{/* vim: set filetype=mustache: */}}
+
+{{/*
+Sanitize a value for use as a Kubernetes label value.
+Replaces "+" with "_", truncates to 63 chars, and strips trailing non-alphanumeric characters.
+*/}}
+{{- define "common.labels.value" -}}
+{{- regexReplaceAll "[^A-Za-z0-9]+$" (. | toString | replace "+" "_" | trunc 63) "" -}}
+{{- end -}}
 
 {{/*
 Kubernetes standard labels
@@ -13,7 +21,7 @@ Kubernetes standard labels
 {{- if and (hasKey . "customLabels") (hasKey . "context") -}}
 {{- $default := dict "app.kubernetes.io/name" (include "common.names.name" .context) "helm.sh/chart" (include "common.names.chart" .context) "app.kubernetes.io/instance" .context.Release.Name "app.kubernetes.io/managed-by" .context.Release.Service -}}
 {{- with .context.Chart.AppVersion -}}
-{{- $_ := set $default "app.kubernetes.io/version" . -}}
+{{- $_ := set $default "app.kubernetes.io/version" (include "common.labels.value" .) -}}
 {{- end -}}
 {{ template "common.tplvalues.merge" (dict "values" (list .customLabels $default) "context" .context) }}
 {{- else -}}
@@ -22,7 +30,7 @@ helm.sh/chart: {{ include "common.names.chart" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- with .Chart.AppVersion }}
-app.kubernetes.io/version: {{ . | quote }}
+app.kubernetes.io/version: {{ include "common.labels.value" . | quote }}
 {{- end -}}
 {{- end -}}
 {{- end -}}

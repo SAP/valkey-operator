@@ -1,6 +1,6 @@
 {{/*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{/* vim: set filetype=mustache: */}}
@@ -44,18 +44,7 @@ Return kubectl image
 Return the proper Docker Image Registry Secret Names
 */}}
 {{- define "valkey.imagePullSecrets" -}}
-{{- include "common.images.renderPullSecrets" (dict "images" (list .Values.image .Values.sentinel.image .Values.metrics.image .Values.volumePermissions.image) "context" $) -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiGroup for PodSecurityPolicy.
-*/}}
-{{- define "podSecurityPolicy.apiGroup" -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "policy" -}}
-{{- else -}}
-{{- print "extensions" -}}
-{{- end -}}
+{{- include "common.images.renderPullSecrets" (dict "images" (list .Values.image .Values.sentinel.image .Values.metrics.image .Values.volumePermissions.image .Values.kubectl.image) "context" $) -}}
 {{- end -}}
 
 {{/*
@@ -72,7 +61,7 @@ Return the secret containing Valkey TLS certificates
 */}}
 {{- define "valkey.tlsSecretName" -}}
 {{- if .Values.tls.existingSecret -}}
-    {{- print .Values.tls.existingSecret -}}
+    {{- printf "%s" (tpl .Values.tls.existingSecret $) -}}
 {{- else -}}
     {{- printf "%s-crt" (include "common.names.fullname" .) -}}
 {{- end -}}
@@ -203,6 +192,26 @@ Get the password key to be retrieved from Valkey secret.
 {{- end -}}
 {{- end -}}
 
+{{/*
+Return Valkey password
+*/}}
+{{- define "valkey.password" -}}
+{{- if or .Values.auth.enabled .Values.global.valkey.password -}}
+    {{- $password_tmp := include "common.secrets.passwords.manage" (dict "secret" (include "valkey.secretName" .) "key" (include "valkey.secretPasswordKey" .) "providedValues" (list "global.valkey.password" "auth.password") "length" 32 "skipB64enc" true "skipQuote" true "honorProvidedValues" true "context" $) -}}
+    {{- $_ := set .Values.global.valkey "password" $password_tmp -}}
+    {{- .Values.global.valkey.password -}}
+{{- end }}
+{{- end }}
+
+{{/*
+Check if password secret is based on user-provided credentials via chart values
+*/}}
+{{- define "valkey.valuesBasedSecret" -}}
+{{- if and .Values.auth.enabled (not .Values.auth.existingSecret) (or (not (empty .Values.global.valkey.password)) (not (empty .Values.auth.password))) }}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
 {{/* Check if there are rolling tags in the images */}}
 {{- define "valkey.checkRollingTags" -}}
 {{- include "common.warnings.rollingTag" .Values.image }}
@@ -216,7 +225,6 @@ Compile all warnings into a single message, and call fail.
 */}}
 {{- define "valkey.validateValues" -}}
 {{- $messages := list -}}
-{{- $messages := append $messages (include "valkey.validateValues.topologySpreadConstraints" .) -}}
 {{- $messages := append $messages (include "valkey.validateValues.architecture" .) -}}
 {{- $messages := append $messages (include "valkey.validateValues.podSecurityPolicy.create" .) -}}
 {{- $messages := append $messages (include "valkey.validateValues.tls" .) -}}
@@ -226,15 +234,6 @@ Compile all warnings into a single message, and call fail.
 
 {{- if $message -}}
 {{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
-{{- end -}}
-{{- end -}}
-
-{{/* Validate values of Valkey - spreadConstrainsts K8s version */}}
-{{- define "valkey.validateValues.topologySpreadConstraints" -}}
-{{- if and (semverCompare "<1.16-0" .Capabilities.KubeVersion.GitVersion) .Values.replica.topologySpreadConstraints -}}
-valkey: topologySpreadConstraints
-    Pod Topology Spread Constraints are only available on K8s  >= 1.16
-    Find more information at https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 {{- end -}}
 {{- end -}}
 

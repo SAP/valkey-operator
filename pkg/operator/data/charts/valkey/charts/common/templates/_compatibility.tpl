@@ -1,6 +1,6 @@
 {{/*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{/* vim: set filetype=mustache: */}}
@@ -40,7 +40,7 @@ Usage:
 {{- end -}}
 {{/* Remove fields that are disregarded when running the container in privileged mode */}}
 {{- if $adaptedContext.privileged -}}
-  {{- $adaptedContext = omit $adaptedContext "capabilities" "seLinuxOptions" -}}
+  {{- $adaptedContext = omit $adaptedContext "capabilities" -}}
 {{- end -}}
 {{- omit $adaptedContext "enabled" | toYaml -}}
 {{- end -}}

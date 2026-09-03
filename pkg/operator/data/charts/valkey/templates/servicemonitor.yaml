@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
@@ -46,7 +46,7 @@ spec:
       {{- if .honorLabels }}
       honorLabels: {{ .honorLabels }}
       {{- end }}
-      {{- with .Values.metrics.serviceMonitor.relabelings }}
+      {{- with $.Values.metrics.serviceMonitor.relabelings }}
       relabelings: {{- toYaml . | nindent 6 }}
       {{- end }}
       {{- if .metricRelabelings }}

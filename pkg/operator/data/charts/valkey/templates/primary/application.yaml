@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 {{- if or (eq .Values.primary.kind "DaemonSet") (gt (int64 .Values.primary.replicaCount) 0) -}}
@@ -33,7 +33,7 @@ spec:
   {{- else }}
   updateStrategy: {{- toYaml .Values.primary.updateStrategy | nindent 4 }}
   {{- end }}
-  {{- if and .Values.primary.minReadySeconds (semverCompare ">= 1.23-0" (include "common.capabilities.kubeVersion" .)) }}
+  {{- if .Values.primary.minReadySeconds }}
   minReadySeconds: {{ .Values.primary.minReadySeconds }}
   {{- end }}
   {{- end }}
@@ -50,7 +50,9 @@ spec:
         {{- end }}
         checksum/health: {{ pick ( include (print $.Template.BasePath "/health-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
         checksum/scripts: {{ pick ( include (print $.Template.BasePath "/scripts-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
+        {{- if include "valkey.valuesBasedSecret" . }}
         checksum/secret: {{ pick ( include (print $.Template.BasePath "/secret.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
+        {{- end }}
         {{- if .Values.primary.podAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.primary.podAnnotations "context" $ ) | nindent 8 }}
         {{- end }}
@@ -61,6 +63,9 @@ spec:
       {{- include "valkey.imagePullSecrets" . | nindent 6 }}
       {{- if .Values.primary.hostAliases }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.primary.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.primary.runtimeClassName }}
+      runtimeClassName: {{ .Values.primary.runtimeClassName }}
       {{- end }}
       {{- if .Values.primary.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.primary.podSecurityContext "context" $) | nindent 8 }}
@@ -130,6 +135,11 @@ spec:
           {{- else if ne .Values.volumePermissions.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.volumePermissions.resourcesPreset) | nindent 12 }}
           {{- end }}
+          {{- if include "common.fips.enabled" . }}
+          env:
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.volumePermissions.fips "global" .Values.global) | quote }}
+          {{- end }}
           volumeMounts:
             - name: empty-dir
               mountPath: /tmp
@@ -189,6 +199,10 @@ spec:
                   key: {{ template "valkey.secretPasswordKey" . }}
             {{- end }}
             {{- end }}
+          {{- if include "common.fips.enabled" . }}
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.fips "global" .Values.global) | quote }}
+          {{- end }}
             - name: VALKEY_TLS_ENABLED
               value: {{ ternary "yes" "no" .Values.tls.enabled | quote }}
             {{- if .Values.tls.enabled }}
@@ -277,7 +291,7 @@ spec:
               mountPath: /opt/bitnami/scripts/start-scripts
             - name: health
               mountPath: /health
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: valkey-password
               mountPath: /opt/bitnami/valkey/secrets/
             {{- end }}
@@ -320,9 +334,9 @@ spec:
             - /bin/bash
             - -c
             - |
-              if [[ -f '/secrets/valkey-password' ]]; then
-              export REDIS_PASSWORD=$(cat /secrets/valkey-password)
-              fi
+              {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
+              export REDIS_PASSWORD="$(< $REDIS_PASSWORD_FILE)"
+              {{- end }}
               redis_exporter{{- range $key, $value := .Values.metrics.extraArgs }} --{{ $key }}={{ $value }}{{- end }}
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
@@ -336,13 +350,22 @@ spec:
             {{- if .Values.auth.enabled }}
             - name: REDIS_USER
               value: default
-            {{- if (not .Values.auth.usePasswordFiles) }}
+            {{- if .Values.auth.usePasswordFiles }}
+            - name: REDIS_PASSWORD_FILE
+              value: "/secrets/valkey-password"
+            {{- else }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "valkey.secretName" . }}
                   key: {{ template "valkey.secretPasswordKey" . }}
             {{- end }}
+            {{- end }}
+            {{- if include "common.fips.enabled" . }}
+            - name: OPENSSL_FIPS
+              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
+            - name: GODEBUG
+              value: {{ include "common.fips.config" (dict "tech" "golang" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
             {{- end }}
             {{- if .Values.tls.enabled }}
             - name: REDIS_ADDR
@@ -395,7 +418,7 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: app-tmp-dir
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: valkey-password
               mountPath: /secrets/
             {{- end }}
@@ -420,7 +443,7 @@ spec:
           configMap:
             name: {{ printf "%s-health" (include "common.names.fullname" .) }}
             defaultMode: 0755
-        {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
         - name: valkey-password
           {{ if .Values.auth.usePasswordFileFromSecret }}
           secret:

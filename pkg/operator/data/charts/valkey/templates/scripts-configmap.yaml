@@ -1,6 +1,6 @@
 {{- /*
 Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: APACHE-2.0
 */}}
 
 apiVersion: v1
@@ -55,7 +55,7 @@ data:
         {{- end }}
 
         {{- if .Values.useHostnames }}
-        echo "${full_hostname}"
+        echo "$full_hostname"
         {{- else }}
         retry_count=0
         until getent hosts "${full_hostname}" | awk '{ print $1; exit }' | grep .; do 
@@ -219,8 +219,10 @@ data:
     fi
 
     {{- if .Values.auth.enabled }}
-    ARGS+=("--requirepass" "${VALKEY_PASSWORD}")
-    ARGS+=("--primaryauth" "${VALKEY_PRIMARY_PASSWORD}")
+    VALKEY_AUTH_CONF="$(mktemp /tmp/valkey-auth-XXXXXX.conf)"
+    chmod 600 "${VALKEY_AUTH_CONF}"
+    printf "requirepass %s\nprimaryauth %s\n" "${VALKEY_PASSWORD}" "${VALKEY_PRIMARY_PASSWORD}" > "${VALKEY_AUTH_CONF}"
+    ARGS+=("--include" "${VALKEY_AUTH_CONF}")
     {{- else }}
     ARGS+=("--protected-mode" "no")
     {{- end }}
@@ -504,7 +506,7 @@ data:
     if ! sentinel_failover_finished; then
         echo "I am the primary pod and you are stopping me. Starting sentinel failover"
         if retry_while "sentinel_failover_finished" "{{ sub .Values.sentinel.terminationGracePeriodSeconds 10 }}" 1; then
-            echo "Primary has been successfuly failed over to a different pod."
+            echo "Primary has been successfully failed over to a different pod."
             exit 0
         else
             echo "Primary failover failed"
@@ -634,8 +636,10 @@ data:
     ARGS=("--port" "${VALKEY_PORT}")
     {{- end }}
     {{- if .Values.auth.enabled }}
-    ARGS+=("--requirepass" "${VALKEY_PASSWORD}")
-    ARGS+=("--primaryauth" "${VALKEY_PASSWORD}")
+    VALKEY_AUTH_CONF="$(mktemp /tmp/valkey-auth-XXXXXX.conf)"
+    chmod 600 "${VALKEY_AUTH_CONF}"
+    printf "requirepass %s\nprimaryauth %s\n" "${VALKEY_PASSWORD}" "${VALKEY_PASSWORD}" > "${VALKEY_AUTH_CONF}"
+    ARGS+=("--include" "${VALKEY_AUTH_CONF}")
     {{- else }}
     ARGS+=("--protected-mode" "no")
     {{- end }}
@@ -742,8 +746,10 @@ data:
     {{- end }}
     ARGS+=("--replicaof" "${VALKEY_PRIMARY_HOST}" "${VALKEY_PRIMARY_PORT_NUMBER}")
     {{- if .Values.auth.enabled }}
-    ARGS+=("--requirepass" "${VALKEY_PASSWORD}")
-    ARGS+=("--primaryauth" "${VALKEY_PRIMARY_PASSWORD}")
+    VALKEY_AUTH_CONF="$(mktemp /tmp/valkey-auth-XXXXXX.conf)"
+    chmod 600 "${VALKEY_AUTH_CONF}"
+    printf "requirepass %s\nprimaryauth %s\n" "${VALKEY_PASSWORD}" "${VALKEY_PRIMARY_PASSWORD}" > "${VALKEY_AUTH_CONF}"
+    ARGS+=("--include" "${VALKEY_AUTH_CONF}")
     {{- else }}
     ARGS+=("--protected-mode" "no")
     {{- end }}
@@ -783,10 +789,15 @@ data:
             sleep 1
         done
         echo "new primary elected, updating label(s)..."
-        kubectl label pod --field-selector metadata.name="$(< "/etc/shared/current")" isPrimary="true" --overwrite
-        if [ -f /etc/shared/previous ]; then
-            kubectl label pod --field-selector metadata.name="$(< "/etc/shared/previous")" isPrimary="false" --overwrite
+        if mv "/etc/shared/current" "/etc/shared/processing" 2>/dev/null; then
+            new_primary="$(< "/etc/shared/processing")"
+            rm -f "/etc/shared/processing"
+            kubectl label pod "${new_primary}" isPrimary="true" --overwrite
+            if mv "/etc/shared/previous" "/etc/shared/demoted" 2>/dev/null; then
+                prev_primary="$(< "/etc/shared/demoted")"
+                rm -f "/etc/shared/demoted"
+                kubectl label pod "${prev_primary}" isPrimary="false" --overwrite
+            fi
         fi
-        rm "/etc/shared/current" "/etc/shared/previous"
     done
 {{- end }}
