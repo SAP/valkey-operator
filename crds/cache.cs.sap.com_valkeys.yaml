@@ -1133,6 +1133,8 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  exporterVersion:
+                    type: string
                   monitor:
                     properties:
                       additionalLabels:
