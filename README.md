@@ -9,7 +9,7 @@ which can be used to deploy valkey caches for cluster-internal usage. For exampl
 
 ```yaml
 apiVersion: cache.cs.sap.com/v1alpha1
-kind: Valkey 
+kind: Valkey
 metadata:
   name: test
 spec:
@@ -29,6 +29,75 @@ to install valkey in the cluster. As a consequence of this fact, the following t
 - sentinel cluster (i.e. dynamic primary with read replicas, primary elected by sentinel).
 
 Sharding (valkey-cluster) scenarios are not supported.
+
+### Image and version
+
+By default the operator deploys the `bitnamilegacy/valkey` image from Docker Hub, at the tag the underlying
+chart pins. The image can be customized through the following attributes:
+
+- `spec.version` sets the image tag (shorthand for `spec.image.tag`).
+- `spec.image.registry`, `spec.image.repository` and `spec.image.tag` address the Valkey server image.
+  `spec.image.tag` takes precedence over `spec.version`.
+- `spec.image.pullPolicy` sets the pull policy of the server, sentinel and exporter images.
+- `spec.image.pullSecrets` references secrets used to pull from a private registry; they are set on the
+  pod, so they cover its sidecar images too.
+- `spec.sentinel.image` and `spec.metrics.image` address the sentinel and metrics exporter images, each
+  taking its own `registry`, `repository` and `tag`. `spec.sentinel.image` covers the sidecar only; the
+  Valkey server container in a sentinel pod takes `spec.image`.
+
+Both sidecars inherit `registry` from `spec.image`; the sentinel inherits `tag` too, while the exporter
+carries its own version rather than Valkey's. `repository` never inherits: each image keeps its own
+default, so mirroring into a flat path means setting `repository` on each image.
+
+The tag is used verbatim, so it is a literal image tag rather than a bare Valkey version. The bundled
+Bitnami-based images carry an OS/revision suffix, e.g. `8.1.2-debian-12-r0`, and a bare `8.1.2` only works
+if your registry publishes it.
+
+For example, to pull all images from a private mirror of the bundled repositories:
+
+```yaml
+spec:
+  image:
+    registry: registry.example.com
+    tag: 8.1.2-debian-12-r0
+    pullSecrets:
+    - my-registry-secret
+```
+
+`spec.image.registry` replaces the registry segment only, so the images resolve to:
+
+- `registry.example.com/bitnamilegacy/valkey:8.1.2-debian-12-r0`
+- `registry.example.com/bitnamilegacy/valkey-sentinel:8.1.2-debian-12-r0` (sentinel mode)
+- `registry.example.com/bitnamilegacy/redis-exporter:<tag bundled with the chart>` (if metrics are enabled)
+
+If your mirror uses a different layout, spell each image out in full. A `registry` may include a path prefix:
+
+```yaml
+spec:
+  image:
+    registry: harbor.example.com/dockerhub
+    repository: mycorp/valkey
+    tag: 8.1.2-debian-12-r0
+  sentinel:
+    enabled: true
+    image:
+      repository: mycorp/valkey-sentinel
+  metrics:
+    enabled: true
+    image:
+      registry: quay.example.com
+      repository: mycorp/redis-exporter
+      tag: 1.67.0-debian-12-r0
+```
+
+The pull secrets have to exist in the namespace of the `Valkey` object; the operator does not create them.
+
+Without `spec.metrics.image.tag` the exporter uses whatever `metrics.image.tag` is pinned to in
+[the bundled chart](pkg/operator/data/charts/valkey/values.yaml). That pin moves when the operator bumps the
+chart, so set the tag explicitly if you mirror the exporter.
+
+Server, sentinel and exporter are the only images the operator renders itself. It passes images from
+`spec.sidecars` through unchanged.
 
 ### Sentinel mode
 

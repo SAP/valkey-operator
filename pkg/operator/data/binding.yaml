@@ -11,7 +11,7 @@ primaryPort: {{ .primaryPort }}
 replicaHost: {{ .replicaHost }}
 replicaPort: {{ .replicaPort }}
 {{- end }}
-password: {{ .password }}
+password: {{ .password | quote }}
 {{- if .tlsEnabled }}
 tlsEnabled: true
 caData: |
