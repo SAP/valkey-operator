@@ -9,18 +9,18 @@ require (
 	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.43.1
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.94.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.94.1
 	github.com/redis/go-redis/v9 v9.22.0
-	github.com/sap/admission-webhook-runtime v0.1.109
-	github.com/sap/component-operator-runtime v0.3.168
-	github.com/sap/go-generics v0.2.74
+	github.com/sap/admission-webhook-runtime v0.1.110
+	github.com/sap/component-operator-runtime v0.3.170
+	github.com/sap/go-generics v0.2.75
 	golang.org/x/mod v0.41.0
-	k8s.io/api v0.37.0
-	k8s.io/apiextensions-apiserver v0.37.0
-	k8s.io/apimachinery v0.37.0
-	k8s.io/client-go v0.37.0
-	k8s.io/code-generator v0.37.0
-	k8s.io/kube-aggregator v0.37.0
+	k8s.io/api v0.37.1
+	k8s.io/apiextensions-apiserver v0.37.1
+	k8s.io/apimachinery v0.37.1
+	k8s.io/client-go v0.37.1
+	k8s.io/code-generator v0.37.1
+	k8s.io/kube-aggregator v0.37.1
 	sigs.k8s.io/controller-runtime v0.25.1
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.25.1
 	sigs.k8s.io/controller-tools v0.22.0
@@ -111,7 +111,7 @@ require (
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
-	k8s.io/streaming v0.37.0 // indirect
+	k8s.io/streaming v0.37.1 // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
 	sigs.k8s.io/cli-utils v0.37.2 // indirect
 	sigs.k8s.io/gateway-api v1.6.0 // indirect
