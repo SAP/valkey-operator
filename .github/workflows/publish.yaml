@@ -20,7 +20,7 @@ defaults:
 jobs:
   publish-go-module:
     name: Publish go module
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Trigger registration on sum.golang.org
@@ -35,7 +35,7 @@ jobs:
 
   publish-docker:
     name: Publish Docker image
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: write
@@ -85,7 +85,7 @@ jobs:
 
   publish-crds:
     name: Publish CRD image
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: write
@@ -118,7 +118,7 @@ jobs:
 
   update-chart:
     name: Update Helm chart
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: release
     needs: [publish-docker,publish-crds]
 
