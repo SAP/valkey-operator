@@ -577,7 +577,7 @@ func doSomethingWithValkey(valkey *operatorv1alpha1.Valkey) {
 		val, err := primaryClient.Get(ctx, "some-key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(val).To(Equal(value))
-		fmt.Println("Test data from valkey: ", val)
+		fmt.Println("Test data from valkey:", val)
 
 		// TODO: it may happen that readerClient uses the primary; should we improve this ?
 		readerNode, ok := valkeyNodeMap[fmt.Sprintf("%s:%s", binding["host"], binding["port"])]
