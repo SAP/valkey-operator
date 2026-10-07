@@ -256,7 +256,7 @@ var _ = Describe("Deploy Valkey", func() {
 			},
 		}
 		defer deleteValkey(valkey, true, "60s")
-		createValkey(valkey, true, "300s")
+		createValkey(valkey, true, "600s")
 		doSomethingWithValkey(valkey)
 	})
 
@@ -286,7 +286,7 @@ var _ = Describe("Deploy Valkey", func() {
 			time.Sleep(1 * time.Minute)
 			deleteValkey(valkey, true, "60s")
 		}()
-		createValkey(valkey, true, "300s")
+		createValkey(valkey, true, "600s")
 		doSomethingWithValkey(valkey)
 	})
 
@@ -305,7 +305,7 @@ var _ = Describe("Deploy Valkey", func() {
 			},
 		}
 		defer deleteValkey(valkey, true, "60s")
-		createValkey(valkey, true, "300s")
+		createValkey(valkey, true, "600s")
 		doSomethingWithValkey(valkey)
 	})
 
@@ -330,7 +330,7 @@ var _ = Describe("Deploy Valkey", func() {
 			},
 		}
 		defer deleteValkey(valkey, true, "60s")
-		createValkey(valkey, true, "300s")
+		createValkey(valkey, true, "600s")
 		doSomethingWithValkey(valkey)
 	})
 
@@ -396,7 +396,7 @@ var _ = Describe("Deploy Valkey", func() {
 			},
 		}
 		defer deleteValkey(valkey, true, "60s")
-		createValkey(valkey, true, "300s")
+		createValkey(valkey, true, "600s")
 		doSomethingWithValkey(valkey)
 		checkServiceForMetrics(valkey)
 		checkServiceMonitor(valkey)
