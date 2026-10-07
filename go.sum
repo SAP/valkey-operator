@@ -193,8 +193,8 @@ github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sap/admission-webhook-runtime v0.1.112 h1:8eBMLu5+jcqQn7PSaT2ZSK0UoHqUDNddbotm2e7FF2w=
 github.com/sap/admission-webhook-runtime v0.1.112/go.mod h1:4zxGI8/CbEAdH6NMN55iQxraKaBqqwogPM0wb8SmCVU=
-github.com/sap/component-operator-runtime v0.3.173 h1:tvMA2NZ/wIf02wZpSTArtJdIhMa62LcrfQ2FfvOo6hI=
-github.com/sap/component-operator-runtime v0.3.173/go.mod h1:LAlYn3waL0liYNpCx9v2tJYzEoDFy9pYunhREdEZ+Vs=
+github.com/sap/component-operator-runtime v0.3.174 h1:soDi2Swr7Y9oj2xWpToZQWJts+YRHJnCLA36B1MDFK0=
+github.com/sap/component-operator-runtime v0.3.174/go.mod h1:cs/Jsqnsum+JVyb50N2SV+KplE0ooQY32b3bX/XurQU=
 github.com/sap/go-generics v0.2.77 h1:vCMDHRXcrviHomEStwhrUJWf82kzcfU2N2/dt6VnEko=
 github.com/sap/go-generics v0.2.77/go.mod h1:mW7pkxK01k/v+9TdoqHUdmiShl3iZgeLUlFxLoZg5dI=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=

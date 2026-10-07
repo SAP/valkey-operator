@@ -12,7 +12,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.94.1
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/sap/admission-webhook-runtime v0.1.112
-	github.com/sap/component-operator-runtime v0.3.173
+	github.com/sap/component-operator-runtime v0.3.174
 	github.com/sap/go-generics v0.2.77
 	golang.org/x/mod v0.41.0
 	k8s.io/api v0.37.1
