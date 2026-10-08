@@ -149,7 +149,6 @@ jobs:
         failStepIfUnsuccessful: true
         appSlugFilter: github-actions
 
-
     - name: Generate release notes
       id: release_notes
       if: steps.get_target_release.outputs.create_release == 'true'
