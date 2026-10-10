@@ -42,7 +42,8 @@ type SentinelProperties struct {
 
 // MetricsProperties models attributes of the metrics exporter sidecar
 type MetricsProperties struct {
-	Enabled                                 bool `json:"enabled,omitempty"`
+	Enabled                                 bool   `json:"enabled,omitempty"`
+	ExporterVersion                         string `json:"exporterVersion,omitempty"`
 	component.KubernetesContainerProperties `json:",inline"`
 	ServiceMonitor                          *MetricsServiceMonitorProperties `json:"monitor,omitempty"`
 	PrometheusRule                          *MetricsPrometheusRuleProperties `json:"prometheusRule,omitempty"`
