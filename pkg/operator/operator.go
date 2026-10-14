@@ -8,12 +8,15 @@ package operator
 import (
 	"embed"
 	"flag"
+	"io/fs"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 
 	"github.com/sap/component-operator-runtime/pkg/component"
 	"github.com/sap/component-operator-runtime/pkg/manifests"
@@ -103,7 +106,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 	if err != nil {
 		return errors.Wrap(err, "error initializing parameter transformer")
 	}
-	objectTransformer := transformer.NewObjectTransformer()
+	objectTransformer := transformer.NewObjectTransformer(mgr.GetClient(), readExporterVersionFromChart(data, "data/charts/valkey/Chart.yaml"))
 	resourceGenerator, err := helm.NewTransformableHelmGenerator(
 		data,
 		"data/charts/valkey",
@@ -131,4 +134,53 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 	}
 	operatorv1alpha1.NewWebhook().SetupWithManager(mgr)
 	return nil
+}
+
+// readExporterVersionFromChart derives the default redis_exporter tag from the
+// chart's own Chart.yaml annotations.images block (the "redis-exporter" entry).
+// This lets the operator pin a sensible exporter version without hardcoding a tag
+// in parameters.yaml, and it tracks the chart automatically on future bumps.
+//
+// The chart declares e.g. "docker.io/bitnami/redis-exporter:1.67.0-debian-12-r0";
+// we extract "1.67.0" and return it with the "v" prefix that oliver006/redis_exporter
+// tags use ("v1.67.0"). Any read/parse failure returns "" (non-fatal): the metrics
+// image is then left untagged rather than blocking operator startup.
+func readExporterVersionFromChart(fsys fs.FS, path string) string {
+	raw, err := fs.ReadFile(fsys, path)
+	if err != nil {
+		return ""
+	}
+	var meta struct {
+		Annotations struct {
+			Images string `json:"images"`
+		} `json:"annotations"`
+	}
+	if err := yaml.Unmarshal(raw, &meta); err != nil {
+		return ""
+	}
+	var images []struct {
+		Name  string `json:"name"`
+		Image string `json:"image"`
+	}
+	if err := yaml.Unmarshal([]byte(meta.Annotations.Images), &images); err != nil {
+		return ""
+	}
+	for _, img := range images {
+		if img.Name != "redis-exporter" {
+			continue
+		}
+		// img.Image is "<registry>/<repo>:<tag>"; take the tag after the last ':'.
+		ref := img.Image
+		if i := strings.LastIndex(ref, ":"); i >= 0 && i > strings.LastIndex(ref, "/") {
+			tag := ref[i+1:]
+			// Bitnami tags look like "1.67.0-debian-12-r0"; keep only the semver part.
+			if j := strings.Index(tag, "-"); j >= 0 {
+				tag = tag[:j]
+			}
+			if tag != "" {
+				return "v" + tag
+			}
+		}
+	}
+	return ""
 }
