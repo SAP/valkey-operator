@@ -15,8 +15,8 @@ fullnameOverride: {{ $fullname }}
 {{- end }}
 
 image:
-  repository: bitnamilegacy/valkey
-  {{- with .Version}}
+  repository: valkey/valkey
+  {{- with .version}}
   tag: {{ . }}
   {{- end }}
 
@@ -83,7 +83,7 @@ primary:
     {{- end }}
   {{- if .persistence }}
   {{- with .persistence.extraVolumes }}
-  extraVolumes: 
+  extraVolumes:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -100,8 +100,8 @@ primary:
   {{- with .sidecars }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- end }}   
-  
+  {{- end }}
+
 replica:
   replicaCount: {{ ternary .replicas (max (sub .replicas 1) 0) $sentinelEnabled }}
   {{- with .nodeSelector }}
@@ -150,11 +150,20 @@ replica:
     size: {{ . }}
     {{- end }}
     {{- end }}
-  {{- if .persistence }}
-  {{- with .persistence.extraVolumes }}
-  extraVolumes: 
-    {{- toYaml . | nindent 4 }}
-  {{- end }} 
+  {{- if $sentinelEnabled }}
+  extraVolumes:
+    - name: bitnami-libs
+      configMap:
+        name: {{ $fullname }}-bitnami-libs
+  {{- if and .persistence .persistence.extraVolumes }}
+    {{- toYaml .persistence.extraVolumes | nindent 4 }}
+  {{- end }}
+  extraVolumeMounts:
+    - name: bitnami-libs
+      mountPath: /opt/bitnami/scripts
+  {{- else if and .persistence .persistence.extraVolumes }}
+  extraVolumes:
+    {{- toYaml .persistence.extraVolumes | nindent 4 }}
   {{- end }}
   {{- with .extraEnvVars }}
   extraEnvVars:
@@ -169,16 +178,19 @@ replica:
   {{- with .sidecars }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- end }}   
+  {{- end }}
 
 {{- if $sentinelEnabled }}
 sentinel:
   enabled: true
   image:
-    repository: bitnamilegacy/valkey-sentinel
+    repository: valkey/valkey
     {{- with .version }}
     tag: {{ . }}
     {{- end }}
+  extraVolumeMounts:
+    - name: bitnami-libs
+      mountPath: /opt/bitnami/scripts
   {{- with .sentinel.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
@@ -197,7 +209,21 @@ sentinel:
 metrics:
   enabled: true
   image:
-    repository: bitnamilegacy/redis-exporter
+    repository: oliver006/redis_exporter
+  # No image tag here on purpose: parameters.yaml must not carry hardcoded image
+  # tags. The operator's ObjectTransformer (internal/transformer) sets the metrics
+  # tag from spec.metrics.exporterVersion, or from a default derived at startup from
+  # the chart's own Chart.yaml when the CR omits it. The transformer also rewrites
+  # the command to ["/redis_exporter"]: the chart hardcodes a "/bin/bash -c ..."
+  # wrapper (not overridable via Helm values in sentinel mode), and the scratch-based
+  # oliver006/redis_exporter image has no shell. The password the wrapper used to
+  # read from a file is injected below as REDIS_PASSWORD.
+  extraEnvVars:
+    - name: REDIS_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ $fullname }}
+          key: valkey-password
   {{- with .metrics.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
@@ -215,7 +241,7 @@ metrics:
   {{- with .metrics.prometheusRule }}
   prometheusRule:
     {{- toYaml . | nindent 4 }}
-  {{- end }}{{- end }}  
+  {{- end }}{{- end }}
 {{- end }}
 
 {{- if $tlsEnabled }}
@@ -247,6 +273,73 @@ extraDeploy:
     annotations:
       helm.sh/hook: post-install
   type: Opaque
+{{- if $sentinelEnabled }}
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: {{ $fullname }}-bitnami-libs
+  data:
+    libos.sh: |
+      #!/bin/bash
+      info()  { echo "INFO  $*" >&2; }
+      debug() { echo "DEBUG $*" >&2; }
+      warn()  { echo "WARN  $*" >&2; }
+      error() { echo "ERROR $*" >&2; }
+      retry_while() {
+          local cmd="${1:?}" retries="${2:-12}" sleep_time="${3:-5}"
+          for ((i=1; i<=retries; i++)); do
+              if eval "$cmd" 2>/dev/null; then return 0; fi
+              sleep "$sleep_time"
+          done
+          return 1
+      }
+      is_boolean_yes() {
+          local val="${1:-}"
+          [[ "$val" == "1" || "$val" =~ ^(yes|true|on)$ ]]
+      }
+      is_empty_value() { [[ -z "${1:-}" ]]; }
+      # openssl shim: the chart's start-sentinel.sh computes the sentinel id with
+      # "openssl sha1" (host_id()), but the valkey/valkey image ships no openssl CLI.
+      # Without it host_id returns empty, so "sentinel myid" is written with no
+      # argument and valkey rejects it ("Unrecognized sentinel configuration
+      # statement"). We emulate "openssl sha1" with sha1sum (coreutils, present in the
+      # image), producing the same 40-hex digest and the "(stdin)= <hash>" shape the
+      # script's `awk '{print $2}'` expects. Only the sha1 subcommand is used by the
+      # chart; anything else defers to a real openssl if one is ever present.
+      openssl() {
+          if [[ "${1:-}" == "sha1" ]]; then
+              printf '(stdin)= %s\n' "$(sha1sum | awk '{ print $1 }')"
+          else
+              command openssl "$@"
+          fi
+      }
+    liblog.sh: |
+      #!/bin/bash
+      info()  { echo "INFO  $*" >&2; }
+      debug() { echo "DEBUG $*" >&2; }
+      warn()  { echo "WARN  $*" >&2; }
+      error() { echo "ERROR $*" >&2; }
+    libvalidations.sh: |
+      #!/bin/bash
+      is_boolean_yes() {
+          local val="${1:-}"
+          [[ "$val" == "1" || "$val" =~ ^(yes|true|on)$ ]]
+      }
+      is_empty_value() { [[ -z "${1:-}" ]]; }
+    libfile.sh: |
+      #!/bin/bash
+      replace_in_file() {
+          local file="${1:?}" match="${2:?}" replace="${3:?}" posix="${4:-true}"
+          if [[ "$posix" = "true" ]]; then
+              sed -i "s|${match}|${replace}|g" "$file"
+          else
+              sed -i -E "s|${match}|${replace}|g" "$file"
+          fi
+      }
+      is_file_writable() {
+          [[ -e "${1:?}" ]] && [[ -w "${1}" ]] || [[ -w "$(dirname "${1}")" ]]
+      }
+{{- end }}
 {{- if and $tlsEnabled (hasKey .tls "certManager") }}
 - apiVersion: cert-manager.io/v1
   kind: Certificate
