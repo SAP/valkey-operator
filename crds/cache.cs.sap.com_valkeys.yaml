@@ -958,6 +958,12 @@ spec:
                         x-kubernetes-list-type: atomic
                     type: object
                 type: object
+              annotations:
+                additionalProperties:
+                  type: string
+                description: Additional annotations added to the generated workload
+                  metadata.
+                type: object
               binding:
                 description: BindingProperties models custom properties for the generated
                   binding secret

@@ -32,6 +32,9 @@ type ValkeySpec struct {
 	Binding                                 *BindingProperties     `json:"binding,omitempty"`
 	ExtraEnvVars                            []corev1.EnvVar        `json:"extraEnvVars,omitempty"`
 	ExtraFlags                              []string               `json:"extraFlags,omitempty"`
+	// Additional annotations added to the generated workload metadata.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // SentinelProperties models attributes of the sentinel sidecar

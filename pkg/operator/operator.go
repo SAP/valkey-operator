@@ -122,7 +122,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 
 	if err := component.NewReconciler[*operatorv1alpha1.Valkey](
 		o.options.Name,
-		resourceGenerator,
+		transformer.NewAnnotationGenerator(resourceGenerator),
 		component.ReconcilerOptions{},
 	).WithPostReconcileHook(
 		reconcileBinding,
