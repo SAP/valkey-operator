@@ -218,6 +218,11 @@ metrics:
   {{- end }}{{- end }}  
 {{- end }}
 
+{{- with .annotations }}
+commonAnnotations:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
 {{- if $tlsEnabled }}
 tls:
   enabled: true
