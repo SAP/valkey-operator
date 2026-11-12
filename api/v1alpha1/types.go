@@ -72,6 +72,9 @@ type MetricsPrometheusRuleProperties struct {
 type TLSProperties struct {
 	Enabled     bool                   `json:"enabled,omitempty"`
 	CertManager *CertManagerProperties `json:"certManager,omitempty"`
+	// Duration of the issued certificate. Defaults to 876000h (~100 years) if not set.
+	// +optional
+	Duration *metav1.Duration `json:"duration,omitempty"`
 }
 
 // CertManagerProperties models cert-manager related attributes
