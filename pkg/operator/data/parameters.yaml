@@ -289,7 +289,7 @@ extraDeploy:
       {{- else }}
       name: {{ $fullname }}-selfsigned
       {{- end }}
-    duration: 876000h
+    duration: {{ .tls.duration | default "876000h" }}
 {{- if not .tls.certManager.issuer }}
 - apiVersion: cert-manager.io/v1
   kind: Issuer

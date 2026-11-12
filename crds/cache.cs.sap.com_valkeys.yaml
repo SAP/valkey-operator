@@ -958,6 +958,12 @@ spec:
                         x-kubernetes-list-type: atomic
                     type: object
                 type: object
+              annotations:
+                additionalProperties:
+                  type: string
+                description: Additional annotations added to the generated workload
+                  metadata.
+                type: object
               binding:
                 description: BindingProperties models custom properties for the generated
                   binding secret
@@ -6036,6 +6042,10 @@ spec:
                             type: string
                         type: object
                     type: object
+                  duration:
+                    description: Duration of the issued certificate. Defaults to 876000h
+                      (~100 years) if not set.
+                    type: string
                   enabled:
                     type: boolean
                 type: object

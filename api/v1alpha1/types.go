@@ -32,6 +32,9 @@ type ValkeySpec struct {
 	Binding                                 *BindingProperties     `json:"binding,omitempty"`
 	ExtraEnvVars                            []corev1.EnvVar        `json:"extraEnvVars,omitempty"`
 	ExtraFlags                              []string               `json:"extraFlags,omitempty"`
+	// Additional annotations added to the generated workload metadata.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // SentinelProperties models attributes of the sentinel sidecar
@@ -69,6 +72,9 @@ type MetricsPrometheusRuleProperties struct {
 type TLSProperties struct {
 	Enabled     bool                   `json:"enabled,omitempty"`
 	CertManager *CertManagerProperties `json:"certManager,omitempty"`
+	// Duration of the issued certificate. Defaults to 876000h (~100 years) if not set.
+	// +optional
+	Duration *metav1.Duration `json:"duration,omitempty"`
 }
 
 // CertManagerProperties models cert-manager related attributes
