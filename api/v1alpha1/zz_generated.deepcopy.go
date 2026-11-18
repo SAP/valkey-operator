@@ -12,6 +12,7 @@ package v1alpha1
 import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -41,6 +42,11 @@ func (in *CertManagerProperties) DeepCopyInto(out *CertManagerProperties) {
 	if in.Issuer != nil {
 		in, out := &in.Issuer, &out.Issuer
 		*out = new(ObjectReference)
+		**out = **in
+	}
+	if in.Duration != nil {
+		in, out := &in.Duration, &out.Duration
+		*out = new(metav1.Duration)
 		**out = **in
 	}
 }
@@ -336,6 +342,13 @@ func (in *ValkeySpec) DeepCopyInto(out *ValkeySpec) {
 		in, out := &in.ExtraFlags, &out.ExtraFlags
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.Annotations != nil {
+		in, out := &in.Annotations, &out.Annotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
 	}
 }
 

@@ -113,6 +113,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 		return errors.Wrap(err, "error initializing resource generator")
 	}
 	resourceGenerator.
+		WithParameterTransformer(objectTransformer).
 		WithParameterTransformer(parameterTransformer).
 		WithObjectTransformer(objectTransformer)
 
