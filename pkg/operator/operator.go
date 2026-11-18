@@ -113,6 +113,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 		return errors.Wrap(err, "error initializing resource generator")
 	}
 	resourceGenerator.
+		WithParameterTransformer(objectTransformer).
 		WithParameterTransformer(parameterTransformer).
 		WithObjectTransformer(objectTransformer)
 
@@ -122,7 +123,7 @@ func (o *Operator) Setup(mgr ctrl.Manager) error {
 
 	if err := component.NewReconciler[*operatorv1alpha1.Valkey](
 		o.options.Name,
-		transformer.NewAnnotationGenerator(resourceGenerator),
+		resourceGenerator,
 		component.ReconcilerOptions{},
 	).WithPostReconcileHook(
 		reconcileBinding,
