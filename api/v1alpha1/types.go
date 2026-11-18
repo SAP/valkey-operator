@@ -72,14 +72,14 @@ type MetricsPrometheusRuleProperties struct {
 type TLSProperties struct {
 	Enabled     bool                   `json:"enabled,omitempty"`
 	CertManager *CertManagerProperties `json:"certManager,omitempty"`
-	// Duration of the issued certificate. Defaults to 876000h (~100 years) if not set.
-	// +optional
-	Duration *metav1.Duration `json:"duration,omitempty"`
 }
 
 // CertManagerProperties models cert-manager related attributes
 type CertManagerProperties struct {
 	Issuer *ObjectReference `json:"issuer,omitempty"`
+	// Duration of the issued certificate. Defaults to 876000h (~100 years) if not set.
+	// +optional
+	Duration *metav1.Duration `json:"duration,omitempty"`
 }
 
 // ObjectReference models a reference to a Kubernetes object

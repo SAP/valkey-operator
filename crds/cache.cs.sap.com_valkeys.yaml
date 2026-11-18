@@ -6030,6 +6030,10 @@ spec:
                     description: CertManagerProperties models cert-manager related
                       attributes
                     properties:
+                      duration:
+                        description: Duration of the issued certificate. Defaults
+                          to 876000h (~100 years) if not set.
+                        type: string
                       issuer:
                         description: ObjectReference models a reference to a Kubernetes
                           object
@@ -6042,10 +6046,6 @@ spec:
                             type: string
                         type: object
                     type: object
-                  duration:
-                    description: Duration of the issued certificate. Defaults to 876000h
-                      (~100 years) if not set.
-                    type: string
                   enabled:
                     type: boolean
                 type: object
